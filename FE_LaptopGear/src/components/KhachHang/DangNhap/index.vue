@@ -7,7 +7,7 @@
                         <div class="card-body">
                             <div class="border p-4 rounded">
                                 <div class="text-center">
-                                    <h3 class="text-uppercase">Đăng Nhập <span class="text-primary fw-bold">Laptop
+                                    <h3 class="text-uppercase">Đăng Nhập Khách Hàng <span class="text-primary fw-bold">Laptop
                                             Gear</span></h3>
                                     <p>
                                         Bạn chưa có tài khoản?
@@ -80,16 +80,20 @@ export default {
                     if (res.data.status) {
                         this.$toast.success(res.data.message);
                         localStorage.setItem('khach_hang_login', res.data.token);
-                        this.$router.push('/khach-hang/profile');
+                        localStorage.setItem('ho_ten_khach_hang', res.data.ho_ten);
+                        if (res.data.avatar) {
+                            localStorage.setItem('avatar_khach_hang', res.data.avatar);
+                        } else {
+                            localStorage.removeItem('avatar_khach_hang');
+                        }
+                        this.$router.push('/trang-chu');
                     } else {
                         this.$toast.error(res.data.message);
                     }
                 })
-                .catch((res) => {
-                    const list = Object.values(res.response.data.errors);
-                    list.forEach((v, i) => {
-                        this.$toast.error(v[0]);
-                    });
+                .catch((error) => {
+                    console.error(error);
+                    this.$toast.error("Lỗi kết nối tới máy chủ");
                 })
         }
     },

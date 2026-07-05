@@ -17,6 +17,7 @@ class GioHang extends Model
         'so_luong',
         'ma_dm',
         'mo_ta',
+        'khach_hang_id',
         'tinh_trang',
     ];
 }

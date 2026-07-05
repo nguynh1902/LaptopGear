@@ -324,23 +324,31 @@ export default {
         };
     },
     mounted() {
-        const kh = localStorage.getItem("khach_hang");
-        if (!kh) {
-            this.$toast.error("Vui lòng đăng nhập trước khi đặt hàng!");
-            this.$router.push("/dang-nhap");
+        const token = localStorage.getItem("khach_hang_login");
+        if (!token) {
+            this.$toast.error("Vui lòng đăng nhập!");
+            this.$router.push("/khach-hang/dang-nhap");
             return;
         }
-        this.khach_hang = JSON.parse(kh);
         this.layThongTinLogin();
     },
     // this.loadDiaChi();
     // this.layThongTinLogin();
     methods: {
         updateProfile() {
-            axios.post("http://127.0.0.1:8000/api/khach-hang/profile/update", this.khach_hang).then((res) => {
+            var token = localStorage.getItem("khach_hang_login");
+            axios.post("http://127.0.0.1:8000/api/khach-hang/profile/update", this.user, {
+                headers: {
+                    Authorization: "Bearer " + token,
+                },
+            }).then((res) => {
                 if (res.data.status) {
                     this.$toast.success(res.data.message);
+                } else {
+                    this.$toast.error(res.data.message);
                 }
+            }).catch(() => {
+                this.$toast.error("Có lỗi xảy ra khi cập nhật!");
             });
         },
 
@@ -357,7 +365,7 @@ export default {
                         console.log(res.data.data);
                         this.user = res.data.data;
                     } else {
-                        toaster.error(res.data.message);
+                        this.$toast.error(res.data.message);
                     }
                 });
         },

@@ -164,25 +164,11 @@ export default {
                 return;
             }
 
-            const payload = {
-                san_pham: sanPhamDaChon,
-            };
-
-            axios
-                .post("http://127.0.0.1:8000/api/khach-hang/gio-hang/dat-hang", payload)
-                .then((res) => {
-                    if (res.data.status) {
-                        this.$toast.success("Vui lòng thanh toán!");
-                        const maHoaDon = res.data.ma_hoa_don;
-                        this.$router.push({ path: "/khach-hang/thanh-toan", query: { ma_hoa_don: maHoaDon } });
-                    } else {
-                        this.$toast.error(res.data.message);
-                    }
-                })
-                .catch((err) => {
-                    console.error(err);
-                    this.$toast.error("Lỗi thanh toán");
-                });
+            // Lưu danh sách sản phẩm đã chọn vào localStorage để trang Thanh Toán lấy
+            localStorage.setItem("san_pham_thanh_toan", JSON.stringify(sanPhamDaChon));
+            
+            // Chuyển sang trang Thanh Toán
+            this.$router.push("/khach-hang/thanh-toan");
         },
 
         formatVND(number) {
@@ -190,12 +176,16 @@ export default {
         },
 
         getSanPham() {
-            axios.get("http://127.0.0.1:8000/api/khach-hang/gio-hang/get-data").then((res) => {
+            axios.get("http://127.0.0.1:8000/api/khach-hang/gio-hang/get-data", {
+                headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
+            }).then((res) => {
                 this.list_gio_hang = res.data.data.map((sp) => ({ ...sp, da_chon: false }));
             });
         },
         xoaSanPham() {
-            axios.post("http://127.0.0.1:8000/api/khach-hang/gio-hang/delete", this.del_san_pham).then((res) => {
+            axios.post("http://127.0.0.1:8000/api/khach-hang/gio-hang/delete", this.del_san_pham, {
+                headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
+            }).then((res) => {
                 if (res.data.status) {
                     this.$toast.success(res.data.message);
                     this.getSanPham();
@@ -210,6 +200,8 @@ export default {
                 .post("http://127.0.0.1:8000/api/khach-hang/gio-hang/update", {
                     ma_sp: item.ma_sp,
                     so_luong: newSoLuong,
+                }, {
+                    headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
                 })
                 .then((res) => {
                     if (res.data.status) {
@@ -239,7 +231,9 @@ export default {
             };
 
             axios
-                .post("http://127.0.0.1:8000/api/khach-hang/gio-hang/update", data)
+                .post("http://127.0.0.1:8000/api/khach-hang/gio-hang/update", data, {
+                    headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
+                })
                 .then((res) => {
                     if (res.data.status) {
                         this.$toast.success("Cập nhật số lượng thành công");
@@ -258,7 +252,9 @@ export default {
                 return;
             }
 
-            axios.post("http://127.0.0.1:8000/api/khach-hang/gio-hang/delete-nhieu", { danh_sach: daChon }).then((res) => {
+            axios.post("http://127.0.0.1:8000/api/khach-hang/gio-hang/delete-nhieu", { danh_sach: daChon }, {
+                headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
+            }).then((res) => {
                 if (res.data.status) {
                     this.$toast.success(res.data.message);
                     this.getSanPham();

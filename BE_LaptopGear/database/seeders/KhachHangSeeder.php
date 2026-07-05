@@ -10,15 +10,16 @@ class KhachHangSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('khach_hangs')->delete();
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         DB::table('khach_hangs')->truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
         DB::table('khach_hangs')->insert([
 
             [
                 'ma_kh' => 'KH01',
                 'mat_khau' => '123456',
-                'ho_ten' => 'Nguyễn Thị G',
-                'email' => 'nguyenthig@gmail.com',
+                'ho_ten' => 'Nguyễn Trọng Tính',
+                'email' => 'nguyentrongtinh@gmail.com',
                 'dia_chi' => '456 Le Loi, Ho Chi Minh City',
                 'sdt' => '0900111222',
                 'created_at' => '2025-06-02 00:00:00',

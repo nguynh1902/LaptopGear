@@ -70,10 +70,9 @@
                   <div class="col-lg-6">
                     <div class="d-grid gap-3 mb-4">
                       <button
-                        class="btn btn-outline-danger py-3 fw-bold"
-                        data-bs-toggle="modal"
-                        v-on:click="themGioHang()"
-                        data-bs-target="#"
+                        class="btn btn-outline-primary py-3 fw-bold"
+                        style="width: 100%"
+                        @click="themVaoGioHang()"
                       >
                         <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
                       </button>
@@ -81,16 +80,14 @@
                   </div>
                   <div class="col-lg-6">
                     <div class="d-grid gap-3 mb-4">
-                      <router-link to="/khach-hang/dat-hang">
-                        <button
-                          class="btn btn-primary py-3 fw-bold"
-                          style="width: 100%"
-                          data-bs-toggle="modal"
-                          data-bs-target="#"
-                        >
-                          <i class="fa-solid fa-cart-shopping"></i> Đặt hàng
-                        </button>
-                      </router-link>
+                      <button
+                        class="btn btn-primary py-3 fw-bold"
+                        style="width: 100%"
+                        data-bs-toggle="modal"
+                        data-bs-target="#DatHang"
+                      >
+                        <i class="fa-solid fa-cart-shopping"></i> Đặt hàng ngay
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -185,7 +182,7 @@
         <div class="bg-white rounded shadow-sm p-3 p-md-4 mt-3">
           <h4>Các dòng máy đang bán chạy khác</h4>
           <div class="row">
-            <template v-for="(value, index) in tt_san_pham_khac" :key="index">
+            <template v-for="(value, index) in tt_san_pham_khac.slice(0, 4)" :key="index">
               <div class="col-lg-3">
                 <router-link :to="'/khach-hang/chi-tiet-san-pham/' + value.id">
                   <div class="card text-center">
@@ -246,51 +243,30 @@
         </div>
         <div class="modal-body">
           <div class="row">
-            <div class="col-lg-3">
-              <VDatePicker v-model="selectedDate" />
-            </div>
             <div class="col-lg-12">
-              <label for="">Tên người nhận</label>
-              <input
-                type="text"
-                class="form-control mt-2"
-                placeholder="Nhập tên người nhận"
-              />
-              <label class="mt-3" for="">Số điện thoại</label>
-              <input
-                type="text"
-                class="form-control mt-2"
-                placeholder="Nhập tên người nhận"
-              />
-              <label class="mt-3" for="">Địa chỉ</label>
-              <input
-                type="text"
-                class="form-control mt-2"
-                placeholder="Nhập tên người nhận"
-              />
+              <label for="">Tên người nhận (*)</label>
+              <input v-model="create_don_hang.ho_ten" type="text" class="form-control mt-2" placeholder="Nhập tên người nhận" />
+              
+              <label class="mt-3" for="">Email</label>
+              <input v-model="create_don_hang.email" type="email" class="form-control mt-2" placeholder="Nhập email" />
+              
+              <label class="mt-3" for="">Số điện thoại (*)</label>
+              <input v-model="create_don_hang.sdt" type="text" class="form-control mt-2" placeholder="Nhập số điện thoại" />
+              
+              <label class="mt-3" for="">Địa chỉ (*)</label>
+              <input v-model="create_don_hang.dia_chi" type="text" class="form-control mt-2" placeholder="Nhập địa chỉ" />
+              
               <label class="mt-3" for="">Số lượng</label>
-              <input
-                type="number"
-                class="form-control mt-2"
-                placeholder="Nhập tên người nhận"
-              />
+              <input v-model="create_don_hang.so_luong" type="number" min="1" class="form-control mt-2" placeholder="Nhập số lượng" />
+              
               <label class="mt-3" for="">Ghi chú</label>
-              <input
-                type="text"
-                class="form-control mt-2"
-                placeholder="Nhập tên người nhận"
-              />
+              <input v-model="create_don_hang.ghi_chu" type="text" class="form-control mt-2" placeholder="Ghi chú thêm" />
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Đóng
-          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="datHang()">Xác nhận đặt hàng</button>
         </div>
       </div>
     </div>
@@ -358,10 +334,13 @@ export default {
   data() {
     return {
       list_sanpham: [],
+      tt_san_pham_khac: [],
       id_san_pham: this.$route.params.id_san_pham,
       tt_san_pham: {},
       tt_danh_gia: {},
-      tt_san_pham_khac: {},
+      create_don_hang: {
+        ho_ten: '', email: '', sdt: '', dia_chi: '', so_luong: 1, ghi_chu: '',
+      },
     };
   },
   mounted() {
@@ -381,33 +360,60 @@ export default {
   },
 
   methods: {
-    themGioHang() {
-      const data = {
-        ma_sp: this.tt_san_pham.id, // hoặc this.tt_san_pham.ma_sp nếu field đó đúng
+    datHang() {
+      const payload = {
+        ...this.create_don_hang,
+        ma_sp: this.tt_san_pham.id || this.tt_san_pham.ma_sp,
         ten_sp: this.tt_san_pham.ten_sp,
         don_gia: this.tt_san_pham.don_gia,
         hinh: this.tt_san_pham.hinh,
-        gia_cu: this.tt_san_pham.gia_cu,
-        so_luong: 1, // chỉ thêm đúng 1 sản phẩm
-        trang_thai: 1,
-        ma_dm: this.tt_san_pham.ma_dm,
-        mo_ta: this.tt_san_pham.mo_ta,
       };
 
       axios
-        .post(
-          "http://127.0.0.1:8000/api/khach-hang/chi-tiet-san-pham/add-data",
-          data
-        )
+        .post("http://127.0.0.1:8000/api/khach-hang/thanh-toan/dat-hang", payload)
+        .then((res) => {
+          if (res.data.status) {
+            this.$toast.success(res.data.message);
+            this.create_don_hang = { ho_ten: '', email: '', sdt: '', dia_chi: '', so_luong: 1, ghi_chu: '' };
+          } else {
+            this.$toast.error(res.data.message || "Đặt hàng thất bại");
+          }
+        })
+        .catch(() => {
+          this.$toast.error("Lỗi khi đặt hàng");
+        });
+    },
+    themVaoGioHang() {
+      const token = localStorage.getItem("khach_hang_login");
+      if (!token) {
+        this.$toast.error("Vui lòng đăng nhập để sử dụng giỏ hàng");
+        this.$router.push('/khach-hang/dang-nhap');
+        return;
+      }
+      
+      const payload = {
+        ma_sp: this.tt_san_pham.id || this.tt_san_pham.ma_sp,
+        ten_sp: this.tt_san_pham.ten_sp,
+        don_gia: this.tt_san_pham.don_gia,
+        hinh: this.tt_san_pham.hinh,
+        so_luong: 1,
+      };
+
+      axios
+        .post("http://127.0.0.1:8000/api/khach-hang/gio-hang/add-data", payload, {
+          headers: {
+            Authorization: 'Bearer ' + token
+          }
+        })
         .then((res) => {
           if (res.data.status) {
             this.$toast.success(res.data.message);
           } else {
-            this.$toast.error("Thêm vào giỏ hàng thất bại");
+            this.$toast.error(res.data.message);
           }
         })
         .catch(() => {
-          this.$toast.error("Lỗi khi thêm sản phẩm vào giỏ hàng");
+          this.$toast.error("Lỗi khi thêm vào giỏ hàng");
         });
     },
     getLaptop() {

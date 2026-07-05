@@ -133,9 +133,9 @@
     </div>
 
     <!-- Giỏ hàng -->
-    <router-link to="/khach-hang/gio-hang" class="text-danger">
-      <i class="fa-solid fa-cart-shopping fa-2xl me-1"></i>
-      <span class="fa-xl">Giỏ hàng</span>
+    <router-link to="/khach-hang/gio-hang" class="cart-btn">
+      <i class="fa-solid fa-cart-shopping fa-lg"></i>
+      <span>Giỏ hàng</span>
     </router-link>
   </div>
 
@@ -180,4 +180,27 @@ export default {
 </script>
 
 <style scoped>
+.primary-menu {
+  padding: 10px 2rem;
+}
+
+.cart-btn {
+  background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+  color: #fff !important;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.cart-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.4);
+  color: #fff;
+}
 </style>

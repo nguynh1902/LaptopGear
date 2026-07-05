@@ -84,20 +84,7 @@ const routes = [
     beforeEnter: checkLoginKhachHang,
 
   },
-  {
-    path: "/khach-hang/thanh-toan",
-    component: () => import("../components/KhachHang/ThanhToan/index.vue"),
-    meta: { layout: "client" },
-    beforeEnter: checkLoginKhachHang,
 
-  },
-  {
-    path: "/khach-hang/gio-hang",
-    component: () => import("../components/KhachHang/GioHang/index.vue"),
-    meta: { layout: "client" },
-    beforeEnter: checkLoginKhachHang,
-
-  },
     {
     path: "/khach-hang/san-pham-theo-danh-muc",
     component: () => import("../components/KhachHang/SanPhamTheoDanhMuc/index.vue"),
@@ -118,6 +105,18 @@ const routes = [
     meta: { layout: "client" },
     beforeEnter: checkLoginKhachHang,
 
+  },
+  {
+    path: "/khach-hang/gio-hang",
+    component: () => import("../components/KhachHang/GioHang/index.vue"),
+    meta: { layout: "client" },
+    beforeEnter: checkLoginKhachHang,
+  },
+  {
+    path: "/khach-hang/thanh-toan",
+    component: () => import("../components/KhachHang/ThanhToan/index.vue"),
+    meta: { layout: "client" },
+    beforeEnter: checkLoginKhachHang,
   },
   {
   path: '/khach-hang/san-pham-theo-danh-muc/:ma_dm',

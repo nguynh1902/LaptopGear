@@ -21,8 +21,7 @@ return new class extends Migration
             $table->integer('so_luong');
             $table->string('ma_dm', 10);
             $table->text('mo_ta');
-            $table->string('email')->nullable();
-            $table->string('sdt')->nullable();
+            $table->foreignId('khach_hang_id')->constrained('khach_hangs')->cascadeOnDelete();
             $table->tinyInteger('tinh_trang')->default(0);
 
             $table->timestamps();

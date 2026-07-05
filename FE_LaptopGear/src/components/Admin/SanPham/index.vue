@@ -8,7 +8,7 @@
         </div>
         <div class="card-body table-responsive">
           <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Search...." />
+            <input v-model="search_key" type="text" class="form-control" placeholder="Search...." />
             <button class="btn btn-secondary input-group-text" style="width: 110px">Tìm kiếm</button>
           </div>
           <div class="table-responsive">
@@ -29,7 +29,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template v-for="(item, index) in list_san_pham" :key="index">
+                <template v-for="(item, index) in list_san_pham_search" :key="index">
                   <tr>
                     <th class="align-middle text-center">{{ index + 1 }}</th>
                     <td class="align-middle text-wrap text-center">
@@ -267,59 +267,92 @@ export default {
     return {
       list_danh_muc: [],
       list_san_pham: [],
-      create_san_pham: {},
+      create_san_pham: { trang_thai: 1 },
       edit_san_pham: {},
       del_san_pham: {},
+      search_key: '',
     };
   },
   mounted() {
     this.getSanPham();
     this.getDanhMuc();
   },
+  computed: {
+    list_san_pham_search() {
+      if (!this.search_key) return this.list_san_pham;
+      let k = this.search_key.toLowerCase();
+      return this.list_san_pham.filter(i => 
+        (i.ten_sp && i.ten_sp.toLowerCase().includes(k)) || 
+        (i.ma_dm && i.ma_dm.toLowerCase().includes(k)) ||
+        (i.ma_sp && i.ma_sp.toLowerCase().includes(k))
+      );
+    }
+  },
   methods: {  
-            formatVND(number) {
+    getHeaders() {
+      return {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("admin_login")}`
+        }
+      };
+    },
+    formatVND(number) {
       return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number);
     },
     getDanhMuc() {
-    axios.get("http://127.0.0.1:8000/api/admin/danh-muc/get-data").then((res) => {
-      this.list_danh_muc = res.data.data;
-    });
-  },
+      axios.get("http://127.0.0.1:8000/api/admin/danh-muc/get-data", this.getHeaders()).then((res) => {
+        if(res.data.data) {
+          this.list_danh_muc = res.data.data;
+        }
+      });
+    },
     getSanPham() {
-      axios.get("http://127.0.0.1:8000/api/admin/san-pham/get-data").then((res) => {
-        this.list_san_pham = res.data.data;
+      axios.get("http://127.0.0.1:8000/api/admin/san-pham/get-data", this.getHeaders()).then((res) => {
+        if(res.data.data) {
+          this.list_san_pham = res.data.data;
+        } else if(res.data.status == 0) {
+          this.$toast.error(res.data.message);
+        }
       });
     },
     themSanPham() {
-      axios.post("http://127.0.0.1:8000/api/admin/san-pham/add-data", this.create_san_pham).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/san-pham/add-data", this.create_san_pham, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
-          this.create_san_pham = {};
+          this.create_san_pham = { trang_thai: 1 };
           this.getSanPham();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     capNhapSanPham() {
-      axios.post("http://127.0.0.1:8000/api/admin/san-pham/update", this.edit_san_pham).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/san-pham/update", this.edit_san_pham, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getSanPham();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     xoaSanPham() {
-      axios.post("http://127.0.0.1:8000/api/admin/san-pham/delete", this.del_san_pham).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/san-pham/delete", this.del_san_pham, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getSanPham();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     doiTrangThai(value) {
-      axios.post("http://127.0.0.1:8000/api/admin/san-pham/change-status", value).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/san-pham/change-status", value, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getSanPham();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },

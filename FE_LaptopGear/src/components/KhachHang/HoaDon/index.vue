@@ -2,13 +2,20 @@
     <div class="row mt">
         <div class="col-lg-12 text-center mb-2">
             <div class="d-inline-block">
-                <h2 class="text-dark"><b>HÓA ĐƠN</b></h2>
+                <h2 class="text-dark"><b>LỊCH SỬ ĐƠN HÀNG CỦA BẠN</b></h2>
                 <div class="text-center">
                     <hr class="bg-dark mb-3" style="width: 100%; height: 4px; border: none; border-radius: 5px" />
                 </div>
             </div>
         </div>
     </div>
+    
+    <div v-if="list_hoa_don.length === 0" class="text-center mt-5">
+        <i class="fa-solid fa-box-open fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">Bạn chưa có đơn hàng nào</h4>
+        <router-link to="/trang-chu" class="btn btn-primary mt-3">Tiếp tục mua sắm</router-link>
+    </div>
+    
     <template v-for="(hoa_don, index) in list_hoa_don" :key="index">
         <div class="bg-white border rounded p-3 mb-4">
             <!-- Header -->
@@ -85,46 +92,48 @@ export default {
         formatVND(number) {
             return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number);
         },
+        getHeaders() {
+            return {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("khach_hang_login")}`
+                }
+            };
+        },
         getSanPham() {
-            const kh = localStorage.getItem("khach_hang");
-            if (!kh) return;
+            axios.get("http://127.0.0.1:8000/api/khach-hang/hoa-don/get-data", this.getHeaders()).then((res) => {
+                if(res.data.data) {
+                    const raw = res.data.data;
+                    const groupedMap = new Map();
 
-            const khach_hang = JSON.parse(kh);
-            const emailKH = khach_hang.email;
+                    raw.forEach((item) => {
+                        const maHD = item.ma_hoa_don;
 
-            axios.get("http://127.0.0.1:8000/api/khach-hang/hoa-don/get-data").then((res) => {
-                const raw = res.data.data;
+                        if (!groupedMap.has(maHD)) {
+                            groupedMap.set(maHD, {
+                                ma_hoa_don: maHD,
+                                ho_ten: item.ho_ten,
+                                sdt: item.sdt,
+                                email: item.email,
+                                dia_chi: item.dia_chi,
+                                tinh_trang: item.tinh_trang,
+                                san_phams: [],
+                            });
+                        }
 
-                const filtered = raw.filter(item => item.email === emailKH);
-
-                const grouped = {};
-
-                filtered.forEach((item) => {
-                    const maHD = item.ma_hoa_don;
-
-                    if (!grouped[maHD]) {
-                        grouped[maHD] = {
-                            ma_hoa_don: maHD,
-                            ho_ten: item.ho_ten,
-                            sdt: item.sdt,
-                            email: item.email,
-                            dia_chi: item.dia_chi,
-                            tinh_trang: item.tinh_trang,
-                            san_phams: [],
-                        };
-                    }
-
-                    grouped[maHD].san_phams.push({
-                        ma_sp: item.ma_sp,
-                        ten_sp: item.ten_sp,
-                        don_gia: item.don_gia,
-                        hinh: item.hinh,
-                        so_luong: item.so_luong,
-                        ghi_chu: item.ghi_chu,
+                        groupedMap.get(maHD).san_phams.push({
+                            ma_sp: item.ma_sp,
+                            ten_sp: item.ten_sp,
+                            don_gia: item.don_gia,
+                            hinh: item.hinh,
+                            so_luong: item.so_luong,
+                            ghi_chu: item.ghi_chu,
+                        });
                     });
-                });
 
-                this.list_hoa_don = Object.values(grouped);
+                    this.list_hoa_don = Array.from(groupedMap.values());
+                }
+            }).catch(() => {
+                this.$toast.error("Vui lòng đăng nhập để xem đơn hàng");
             });
         },
 

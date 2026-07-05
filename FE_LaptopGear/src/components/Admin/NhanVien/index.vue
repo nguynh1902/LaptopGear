@@ -8,7 +8,7 @@
         </div>
         <div class="card-body table-responsive">
           <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Search...." />
+            <input v-model="search_key" type="text" class="form-control" placeholder="Search...." />
             <button class="btn btn-secondary input-group-text" style="width: 110px">Tìm kiếm</button>
           </div>
           <div class="table-responsive">
@@ -30,7 +30,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template v-for="(item, index) in list_nhan_vien" :key="index">
+                <template v-for="(item, index) in list_nhan_vien_search" :key="index">
                   <tr>
                     <th class="align-middle text-center">{{ index + 1 }}</th>
                     <td class="align-middle text-wrap text-center">
@@ -270,68 +270,92 @@ export default {
     return {
       list_nhan_vien: [],
       create_nhan_vien: {
-      ho_ten: '',
-      ngay_sinh: '',
-      dia_chi: '',
-      luong_cb: '',
-      sdt: '', 
-      email: '',
-      mat_khau: '',
-      trang_thai: '',
-      ghi_chu: '',
-      ngay_vao_lam: '',
-      vai_tro: '',
-    },
+        ho_ten: '', ngay_sinh: '', dia_chi: '', luong_cb: '',
+        sdt: '', email: '', mat_khau: '', trang_thai: 1,
+        ghi_chu: '', ngay_vao_lam: '', vai_tro: '',
+      },
       edit_nhan_vien: {},
       del_nhan_vien: {},
+      search_key: '',
     };
   },
   mounted() {
     this.getNhanVien();
   },
+  computed: {
+    list_nhan_vien_search() {
+      if (!this.search_key) return this.list_nhan_vien;
+      let k = this.search_key.toLowerCase();
+      return this.list_nhan_vien.filter(i => 
+        (i.ho_ten && i.ho_ten.toLowerCase().includes(k)) || 
+        (i.ma_nv && i.ma_nv.toLowerCase().includes(k)) ||
+        (i.email && i.email.toLowerCase().includes(k)) ||
+        (i.sdt && i.sdt.toLowerCase().includes(k))
+      );
+    }
+  },
   methods: {
+    getHeaders() {
+      return {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("admin_login")}`
+        }
+      };
+    },
     formatVND(number) {
-            return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number,);
-        },
+      return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number);
+    },
     getNhanVien() {
-      axios.get("http://127.0.0.1:8000/api/admin/nhan-vien/get-data")
+      axios.get("http://127.0.0.1:8000/api/admin/nhan-vien/get-data", this.getHeaders())
       .then((res) => {
-        this.list_nhan_vien = res.data.data;
+        if(res.data.data) {
+          this.list_nhan_vien = res.data.data;
+        } else if(res.data.status == 0) {
+          this.$toast.error(res.data.message);
+        }
       });
     },
     themNhanVien() {
-      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/add-data", this.create_nhan_vien)
+      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/add-data", this.create_nhan_vien, this.getHeaders())
       .then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
-          this.create_nhan_vien = {};
+          this.create_nhan_vien = { trang_thai: 1 };
           this.getNhanVien();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     capNhapNhanVien() {
-      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/update", this.edit_nhan_vien)
+      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/update", this.edit_nhan_vien, this.getHeaders())
       .then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getNhanVien();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     xoaNhanVien() {
-      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/delete", this.del_nhan_vien)
+      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/delete", this.del_nhan_vien, this.getHeaders())
       .then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getNhanVien();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     doiTrangThai(value) {
-      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/change-status", value).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/nhan-vien/change-status", value, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getNhanVien();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },

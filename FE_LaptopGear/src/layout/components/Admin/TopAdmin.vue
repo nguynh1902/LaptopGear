@@ -53,40 +53,13 @@ export default {
         };
     },
     mounted() {
-        const adminStr = localStorage.getItem("admin");
-        if (!adminStr) {
+        const token = localStorage.getItem("admin_login");
+        if (!token) {
             this.$router.push("/admin/dang-nhap");
-            return;
         }
-
-        // Parse chuỗi JSON thành object
-        this.admin = JSON.parse(adminStr);
     },
 
     methods: {
-        logout() {
-            axios
-                .get("http://127.0.0.1:8000/api/admin/dang-xuat", {
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("nhan_vien_login"),
-                    },
-                })
-                .then((res) => {
-                    if (res.data.status) {
-                        this.$toast.success(res.data.message);
-                        localStorage.removeItem("nhan_vien_login");
-                        this.$router.push("/admin/dang-nhap");
-                    } else {
-                        this.$toast.error(res.data.message);
-                    }
-                })
-                .catch((res) => {
-                    const list = Object.values(res.res.data.errors);
-                    list.forEach((v, i) => {
-                        this.$toast.error(v[0]);
-                    });
-                });
-        },
         logout() {
         	axios.get('http://127.0.0.1:8000/api/admin/dang-xuat', {
         		headers: {
@@ -102,11 +75,9 @@ export default {
         				this.$toast.error(res.data.message);
         			}
         		})
-        		.catch(res => {
-        			const list = Object.values(res.res.data.errors);
-        			list.forEach((v, i) => {
-        				this.$toast.error(v[0]);
-        			});
+        		.catch(error => {
+                    console.error(error);
+        			this.$toast.error("Lỗi đăng xuất");
         		});
         },
         // logoutAll() {

@@ -93,21 +93,17 @@ export default {
         return {
             khach_hang: {},
             ho_ten: localStorage.getItem("ho_ten_khach_hang"),
-            avatar: localStorage.getItem("avatar"),
+            avatar: localStorage.getItem("avatar_khach_hang") || 'https://st3.depositphotos.com/15648834/17930/v/450/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg',
             noi_dung_tim: "",
         };
     },
 
     mounted() {
-        const kh = localStorage.getItem("khach_hang");
+        const token = localStorage.getItem("khach_hang_login");
 
-        if (!kh) {
-            this.$toast.error("Vui lòng đăng nhập trước khi đặt hàng!");
-            this.$router.push("/dang-nhap");
-            return;
+        if (!token) {
+            // Optional: don't force redirect if they are on a public page
         }
-
-        this.khach_hang = JSON.parse(kh);
     },
 
     methods: {
@@ -134,6 +130,8 @@ export default {
                     this.$toast.success(res.data.message);
 
                     localStorage.removeItem("khach_hang_login");
+                    localStorage.removeItem("ho_ten_khach_hang");
+                    localStorage.removeItem("avatar_khach_hang");
 
                     this.$router.push("/khach-hang/dang-nhap");
                 } 

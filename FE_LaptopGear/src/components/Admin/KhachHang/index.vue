@@ -7,7 +7,7 @@
         </div>
         <div class="card-body table-responsive">
           <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Search...." />
+            <input v-model="search_key" type="text" class="form-control" placeholder="Search...." />
             <button
               class="btn btn-secondary input-group-text"
               style="width: 110px"
@@ -31,7 +31,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template v-for="(item, index) in list_khach_hang" :key="index">
+                <template v-for="(item, index) in list_khach_hang_search" :key="index">
                   <tr>
                     <th class="align-middle text-center">{{ index + 1 }}</th>
                     <td class="align-middle text-wrap text-center">
@@ -262,12 +262,32 @@ export default {
       list_khach_hang: [],
       edit_khach_hang: {},
       del_khach_hang: {},
+      search_key: '',
     };
   },
   mounted() {
     this.getKhachHang();
   },
+  computed: {
+    list_khach_hang_search() {
+      if (!this.search_key) return this.list_khach_hang;
+      let k = this.search_key.toLowerCase();
+      return this.list_khach_hang.filter(i => 
+        (i.ho_ten && i.ho_ten.toLowerCase().includes(k)) || 
+        (i.ma_kh && i.ma_kh.toLowerCase().includes(k)) ||
+        (i.email && i.email.toLowerCase().includes(k)) ||
+        (i.sdt && i.sdt.toLowerCase().includes(k))
+      );
+    }
+  },
   methods: {
+    getHeaders() {
+      return {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("admin_login")}`
+        }
+      };
+    },
     formatVND(number) {
       return new Intl.NumberFormat("vi-VI", {
         style: "currency",
@@ -276,21 +296,28 @@ export default {
     },
     getKhachHang() {
       axios
-        .get("http://127.0.0.1:8000/api/admin/khach-hang/get-data")
+        .get("http://127.0.0.1:8000/api/admin/khach-hang/get-data", this.getHeaders())
         .then((res) => {
-          this.list_khach_hang = res.data.data;
+          if(res.data.data) {
+            this.list_khach_hang = res.data.data;
+          } else if(res.data.status == 0) {
+            this.$toast.error(res.data.message);
+          }
         });
     },
     capNhapKhachHang() {
       axios
         .post(
           "http://127.0.0.1:8000/api/admin/khach-hang/update",
-          this.edit_khach_hang
+          this.edit_khach_hang,
+          this.getHeaders()
         )
         .then((res) => {
           if (res.data.status) {
             this.$toast.success(res.data.message);
             this.getKhachHang();
+          } else {
+            this.$toast.error(res.data.message);
           }
         });
     },
@@ -298,22 +325,15 @@ export default {
       axios
         .post(
           "http://127.0.0.1:8000/api/admin/khach-hang/delete",
-          this.del_khach_hang
+          this.del_khach_hang,
+          this.getHeaders()
         )
         .then((res) => {
           if (res.data.status) {
             this.$toast.success(res.data.message);
             this.getKhachHang();
-          }
-        });
-    },
-    doiTrangThai(value) {
-      axios
-        .post("http://127.0.0.1:8000/api/admin/khach-hang/change-status", value)
-        .then((res) => {
-          if (res.data.status) {
-            this.$toast.success(res.data.message);
-            this.getKhachHang();
+          } else {
+            this.$toast.error(res.data.message);
           }
         });
     },

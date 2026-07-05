@@ -37,7 +37,7 @@
         </div>
         <div class="card-body table-responsive">
           <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Search...." />
+            <input v-model="search_key" type="text" class="form-control" placeholder="Search...." />
             <button class="btn btn-secondary input-group-text" style="width: 110px">Tìm kiếm</button>
           </div>
           <div class="table-responsive">
@@ -52,7 +52,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template v-for="(item, index) in list_danh_muc" :key="index">
+                <template v-for="(item, index) in list_danh_muc_search" :key="index">
                   <tr>
                     <th class="align-middle text-center">{{ index + 1 }}</th>
                     <td class="align-middle text-wrap text-center" style="width: 200px">
@@ -169,51 +169,80 @@ export default {
   data() {
     return {
       list_danh_muc: [],
-      create_danh_muc: {},
+      create_danh_muc: { trang_thai: 1 },
       edit_danh_muc: {},
       del_danh_muc: {},
+      search_key: '',
     };
   },
   mounted() {
     this.getDanhMuc();
   },
+  computed: {
+    list_danh_muc_search() {
+      if (!this.search_key) return this.list_danh_muc;
+      let k = this.search_key.toLowerCase();
+      return this.list_danh_muc.filter(i => 
+        (i.ten_danh_muc && i.ten_danh_muc.toLowerCase().includes(k)) || 
+        (i.ma_dm && i.ma_dm.toLowerCase().includes(k))
+      );
+    }
+  },
   methods: {
+    getHeaders() {
+      return {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("admin_login")}`
+        }
+      };
+    },
     getDanhMuc() {
-      axios.get("http://127.0.0.1:8000/api/admin/danh-muc/get-data").then((res) => {
-        this.list_danh_muc = res.data.data; 
+      axios.get("http://127.0.0.1:8000/api/admin/danh-muc/get-data", this.getHeaders()).then((res) => {
+        if(res.data.data) {
+          this.list_danh_muc = res.data.data;
+        } else if(res.data.status == 0) {
+          this.$toast.error(res.data.message);
+        }
       });
     },
     themDanhMuc() {
-      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/add-data", 
-      this.create_danh_muc).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/add-data", this.create_danh_muc, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
-          this.create_danh_muc = {};
+          this.create_danh_muc = { trang_thai: 1 };
           this.getDanhMuc();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     capNhatDanhMuc() {
-      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/update", this.edit_danh_muc).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/update", this.edit_danh_muc, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getDanhMuc();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     xoaDanhMuc() {
-      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/delete", this.del_danh_muc).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/delete", this.del_danh_muc, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getDanhMuc();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },
     doiTrangThai(value) {
-      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/change-status", value).then((res) => {
+      axios.post("http://127.0.0.1:8000/api/admin/danh-muc/change-status", value, this.getHeaders()).then((res) => {
         if (res.data.status) {
           this.$toast.success(res.data.message);
           this.getDanhMuc();
+        } else {
+          this.$toast.error(res.data.message);
         }
       });
     },

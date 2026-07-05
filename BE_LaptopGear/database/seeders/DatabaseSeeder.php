@@ -17,23 +17,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            BaoHanhSeeder::class,
-            GioHangSeeder::class,
-            ChiTietBaoHanhSeeder::class,
-            ChiTietHoaDonSeeder::class,
-            ChuongTrinhKhuyenMaiSeeder::class,
-            DanhGiaSeeder::class,
             DanhMucSeeder::class,
-            HoaDonSeeder::class,
-            KhuyenMaiSeeder::class,
-            LoaiTaiKhoanSeeder::class,
-            NhanVienSeeder::class,
-            NhapXuatSeeder::class,
             SanPhamSeeder::class,
+            NhanVienSeeder::class,
             KhachHangSeeder::class,
-            Thueseeder::class,
-
-
+            HoaDonSeeder::class,
+            DanhGiaSeeder::class,
         ]);
     }
 }

@@ -3,16 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\DanhMuc;
-use App\Models\NhanVien;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
-class DanhMucController
+class DanhMucController extends Controller
 {
     public function getData()
     {
-        $data = DanhMuc::get();
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json(['status' => 0, 'message' => 'Bạn cần đăng nhập!']);
+        }
 
+        $data = DanhMuc::get();
         return response()->json([
             'data' => $data
         ]);
@@ -20,26 +23,22 @@ class DanhMucController
 
     public function addData(Request $request)
     {
-        // Lấy tất cả mã đã có trong DB
-        $usedCodes = DanhMuc::pluck('ma_dm')->toArray();
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json(['status' => 0, 'message' => 'Bạn cần đăng nhập!']);
+        }
 
-        // Tạo mảng chỉ chứa phần số sau DM (ví dụ: 'DM02' => 2)
+        $usedCodes = DanhMuc::pluck('ma_dm')->toArray();
         $numericCodes = array_map(function ($code) {
             return (int)str_replace('DM', '', $code);
         }, $usedCodes);
-
-        sort($numericCodes); // Sắp xếp tăng dần
-
-        // Tìm số nhỏ nhất chưa dùng
+        sort($numericCodes);
         $newNumber = 1;
         while (in_array($newNumber, $numericCodes)) {
             $newNumber++;
         }
-
-        // Tạo mã mới: DM01, DM02,...
         $newMaDm = 'DM' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
 
-        // Tạo mới danh mục
         DanhMuc::create([
             'ma_dm'         => $newMaDm,
             'ten_danh_muc'  => $request->ten_danh_muc,
@@ -48,18 +47,20 @@ class DanhMucController
 
         return response()->json([
             'status'  => true,
-            'message' => 'Thêm danh mục "' . $request->ten_danh_muc . '" thành công với mã: ' . $newMaDm,
+            'message' => 'Thêm danh mục "' . $request->ten_danh_muc . '" thành công',
         ]);
     }
 
-
     public function update(Request $request)
     {
-        DanhMuc::where('id', $request->id)->update([
-            'ma_dm'         => $request->ma_dm,
-            'ten_danh_muc'        => $request->ten_danh_muc,
-            'trang_thai'     => $request->trang_thai,
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json(['status' => 0, 'message' => 'Bạn cần đăng nhập!']);
+        }
 
+        DanhMuc::where('id', $request->id)->update([
+            'ten_danh_muc' => $request->ten_danh_muc,
+            'trang_thai'   => $request->trang_thai,
         ]);
 
         return response()->json([
@@ -70,30 +71,44 @@ class DanhMucController
 
     public function destroy(Request $request)
     {
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json(['status' => 0, 'message' => 'Bạn cần đăng nhập!']);
+        }
+
         DanhMuc::where('id', $request->id)->delete();
 
         return response()->json([
             'status'    => true,
-            'message'   => 'Xóa DanhMuc thành công',
+            'message'   => 'Xóa danh mục thành công',
         ]);
     }
 
     public function changeStatus(Request $request)
     {
-        $DanhMuc = DanhMuc::where('id', $request->id)->first();
-        // Đảo trạng thái: nếu đang hoạt động (1) thì chuyển thành tạm tắt (0), ngược lại thì chuyển thành hoạt động
-        $DanhMuc->trang_thai = ($DanhMuc->trang_thai == DanhMuc::HOAT_DONG) ? DanhMuc::TAM_TAT : DanhMuc::HOAT_DONG;
-        $DanhMuc->save();
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json(['status' => 0, 'message' => 'Bạn cần đăng nhập!']);
+        }
+
+        $danhMuc = DanhMuc::where('id', $request->id)->first();
+        if ($danhMuc) {
+            $danhMuc->trang_thai = ($danhMuc->trang_thai == DanhMuc::HOAT_DONG) ? DanhMuc::TAM_TAT : DanhMuc::HOAT_DONG;
+            $danhMuc->save();
+            return response()->json([
+                'status'  => true,
+                'message' => 'Thay đổi trạng thái danh mục thành công',
+            ]);
+        }
         return response()->json([
-            'status'  => true,
-            'message' => 'Thay đổi trạng thái DanhMuc thành công',
+            'status'  => 0,
+            'message' => 'Danh mục không tồn tại',
         ]);
     }
 
-
     public function getDataClientDanhMuc()
     {
-        $data = DanhMuc::where('trang_thai', '>', 0)->get();
+        $data = DanhMuc::where('trang_thai', DanhMuc::HOAT_DONG)->get();
         return response()->json([
             'status'    => true,
             'data'      => $data,

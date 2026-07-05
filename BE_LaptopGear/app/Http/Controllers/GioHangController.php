@@ -6,90 +6,104 @@ use App\Models\GioHang;
 use App\Models\SanPham;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class GioHangController
 {
      public function getData()
     {
-        $data = GioHang::all();
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!']);
+
+        $data = GioHang::where('khach_hang_id', $user->id)->get();
 
         return response()->json([
             'data' => $data
         ]);
     }
-        public function addData(Request $request)
+    
+    public function addData(Request $request)
     {
-        GioHang::create([
-            'ma_sp'       => $request->ma_sp,
-            'ten_sp'      => $request->ten_sp,
-            'don_gia'     => $request->don_gia,
-            'trang_thai'  => $request->trang_thai,
-            'gia_cu'      => $request->gia_cu,
-            'so_luong'    => $request->so_luong,
-            'hinh'        => $request->hinh,
-            'ma_dm'       => $request->ma_dm,
-            'email'       => $request->email,
-            'sdt'         => $request->sdt,
-            'mo_ta'       => $request->mo_ta,
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!']);
 
-        ]);
+        $check = GioHang::where('khach_hang_id', $user->id)->where('ma_sp', $request->ma_sp)->first();
+        if ($check) {
+            $check->so_luong += $request->so_luong;
+            $check->save();
+        } else {
+            GioHang::create([
+                'khach_hang_id' => $user->id,
+                'ma_sp'       => $request->ma_sp,
+                'ten_sp'      => $request->ten_sp,
+                'don_gia'     => $request->don_gia,
+                'trang_thai'  => 1,
+                'gia_cu'      => $request->gia_cu ?? 0,
+                'so_luong'    => $request->so_luong,
+                'hinh'        => $request->hinh,
+                'ma_dm'       => $request->ma_dm ?? '0',
+                'mo_ta'       => $request->mo_ta ?? '',
+            ]);
+        }
 
         return response()->json([
             'status'    => true,
-            'message'   => 'Thêm GioHang ' . $request->ten_sp. ' thành công',
+            'message'   => 'Thêm ' . $request->ten_sp . ' vào giỏ hàng thành công',
         ]);
     }
 
-        public function delData(Request $request)
+    public function delData(Request $request)
     {
-        GioHang::where('id', $request->id)->delete();
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!']);
+
+        GioHang::where('khach_hang_id', $user->id)->where('id', $request->id)->delete();
 
         return response()->json([
             'status'    => true,
-            'message'   => 'Xóa Sản phẩm thành công',
+            'message'   => 'Xóa sản phẩm thành công',
         ]);
     }
 
-public function update(Request $request)
-{
-    $request->validate([
-        'ma_sp'    => 'required|string',
-        'so_luong' => 'required|integer|min:1',
-    ]);
+    public function update(Request $request)
+    {
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!']);
 
-    // Tìm đúng bản ghi trong giỏ hàng chỉ theo ma_sp
-    $gioHang = GioHang::where('ma_sp', $request->ma_sp)->first();
+        $request->validate([
+            'ma_sp'    => 'required|string',
+            'so_luong' => 'required|integer|min:1',
+        ]);
 
-    if (!$gioHang) {
+        $gioHang = GioHang::where('khach_hang_id', $user->id)->where('ma_sp', $request->ma_sp)->first();
+
+        if (!$gioHang) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Sản phẩm không tồn tại trong giỏ hàng.',
+            ], 404);
+        }
+
+        $gioHang->so_luong = $request->so_luong;
+        $gioHang->save();
+
         return response()->json([
-            'status'  => false,
-            'message' => 'Sản phẩm không tồn tại trong giỏ hàng.',
-        ], 404);
+            'status'  => true,
+            'message' => 'Cập nhật số lượng thành công.',
+            'data'    => $gioHang,
+        ]);
     }
 
-    // Cập nhật số lượng
-    $gioHang->so_luong = $request->so_luong;
-    $gioHang->save();
+    public function removeItem(Request $request)
+    {
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!']);
 
-    return response()->json([
-        'status'  => true,
-        'message' => 'Cập nhật số lượng thành công.',
-        'data'    => $gioHang,
-    ]);
-}
+        GioHang::where('khach_hang_id', $user->id)->where('ma_sp', $request->ma_sp)->delete();
 
-public function removeItem(Request $request)
-{
-    DB::table('gio_hangs')
-        ->where('ma_kh', $request->ma_kh)
-        ->where('ma_sp', $request->ma_sp)
-        ->delete();
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Đã xóa sản phẩm khỏi giỏ hàng',
-    ]);
-}
-
-
+        return response()->json([
+            'status' => true,
+            'message' => 'Đã xóa sản phẩm khỏi giỏ hàng',
+        ]);
+    }
 }

@@ -151,20 +151,12 @@ export default {
             };
             this.$router.push("/khach-hang/dang-nhap");
           } else {
-            this.$toast.error("Đăng ký tài khoản thất bại");
+            this.$toast.error(res.data.message || "Đăng ký tài khoản thất bại");
           }
         })
         .catch((error) => {
           console.error(error);
-          if (error.response?.status === 422) {
-            const errors = error.response.data.errors;
-            for (const key in errors) {
-              this.$toast.error(errors[key][0]);
-              break;
-            }
-          } else {
-            this.$toast.error("Lỗi kết nối tới máy chủ");
-          }
+          this.$toast.error("Lỗi kết nối tới máy chủ");
         });
     },
   },

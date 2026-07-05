@@ -133,7 +133,7 @@ Xuất xứ: Trung Quốc.',
                 'trang_thai' => 1,
                 'so_luong' => 200,
                 'hinh' => 'https://cdn2.cellphones.com.vn/x/media/catalog/product/2/_/2_470_1_1.png',
-                'ma_dm' => 'SP03',
+                'ma_dm' => 'DM03',
                 'mo_ta' => 'CPU: Intel® Core™ i7-1260P (2.1GHz up to 4.7GHz, 18MB Cache).
 Ram: 16GB LPDDR4X 4266MHz.
 Ổ cứng: 512GB PCIe 3.0 NVMe SSD.
@@ -155,7 +155,7 @@ Xuất xứ: Trung Quốc.',
                 'trang_thai' => 1,
                 'so_luong' => 70,
                 'hinh' => 'https://cdn2.cellphones.com.vn/x/media/catalog/product/l/a/laptop_msi_8_1_1.png',
-                'ma_dm' => 'SP03',
+                'ma_dm' => 'DM03',
                 'mo_ta' => 'CPU: Intel® Core™ i5-12450H (2.0GHz up to 4.4GHz, 12MB Cache).
 Ram: 16GB DDR4 3200MHz.
 Ổ cứng: 512GB PCIe Gen 4 SSD.
@@ -177,7 +177,7 @@ Xuất xứ: Trung Quốc.',
                 'trang_thai' => 1,
                 'so_luong' => 30,
                 'hinh' => 'https://cdn2.cellphones.com.vn/x/media/catalog/product/t/e/text_ng_n_6__4_104.png',
-                'ma_dm' => 'SP03',
+                'ma_dm' => 'DM03',
                 'mo_ta' => 'CPU: Intel® Core™ i7-1165G7 (2.8GHz up to 4.7GHz, 12MB Cache).
 Ram: 16GB LPDDR4X 3733MHz.
 Ổ cứng: 512GB M.2 NVMe SSD.
@@ -199,7 +199,7 @@ Xuất xứ: Trung Quốc.',
                 'trang_thai' => 1,
                 'so_luong' => 60,
                 'hinh' => 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/h/u/huawei-matebook-x_4_.jpg',
-                'ma_dm' => 'SP03',
+                'ma_dm' => 'DM03',
                 'mo_ta' => 'CPU: Intel® Core™ Ultra 7 155H (1.4GHz up to 4.8GHz, 24MB Cache).
 Ram: 16GB LPDDR5X 7467MHz.
 Ổ cứng: 1TB M.2 PCIe 4.0 NVMe SSD.
@@ -221,7 +221,7 @@ Xuất xứ: Trung Quốc.',
                 'trang_thai' => 1,
                 'so_luong' => 40,
                 'hinh' => 'https://cdn2.cellphones.com.vn/x/media/catalog/product/t/e/text_ng_n_86_.png',
-                'ma_dm' => 'SP03',
+                'ma_dm' => 'DM03',
                 'mo_ta' => 'CPU: Intel® Core™ Ultra 7 155H (1.4GHz up to 4.8GHz, 24MB Cache).
 Ram: 32GB LPDDR5X 7467MHz.
 Ổ cứng: 1TB PCIe 4.0 NVMe SSD.
@@ -695,6 +695,30 @@ Xuất xứ: Trung Quốc.",
                 'trailer' => 'yKiLKj3R810',
             ],
 
+            [
+                'ma_sp' => 41,
+                'ten_sp' => 'PC Gaming ASUS ROG Strix G10DK (Ryzen 7 5800X | 16GB | 512GB SSD | RTX 3060 | Win 11)',
+                'don_gia' => 25900000,
+                'gia_cu' => 27900000,
+                'trang_thai' => 1,
+                'so_luong' => 20,
+                'hinh' => 'https://cdn2.cellphones.com.vn/x/media/catalog/product/p/c/pc-gaming-asus-rog-strix-g10dk-v2114w-1.png',
+                'ma_dm' => 'DM07',
+                'mo_ta' => "CPU: AMD Ryzen 7 5800X.\nRAM: 16GB DDR4.\nSSD: 512GB PCIe Gen 3.\nGPU: NVIDIA RTX 3060 12GB.\nOS: Windows 11.\nNPP: ASUS Việt Nam.",
+                'trailer' => 'example_pc',
+            ],
+            [
+                'ma_sp' => 42,
+                'ten_sp' => 'PC Dell Vostro 3020 Tower (Core i5-13400 | 8GB | 512GB SSD | Win 11)',
+                'don_gia' => 15500000,
+                'gia_cu' => 16500000,
+                'trang_thai' => 1,
+                'so_luong' => 30,
+                'hinh' => 'https://cdn2.cellphones.com.vn/x/media/catalog/product/m/a/may-tinh-de-ban-dell-vostro-3020-tower-4xn2x1-1.png',
+                'ma_dm' => 'DM07',
+                'mo_ta' => "CPU: Intel Core i5-13400.\nRAM: 8GB DDR4.\nSSD: 512GB PCIe Gen 3.\nOS: Windows 11.\nNPP: Dell Việt Nam.",
+                'trailer' => 'example_pc2',
+            ],
         ]);
     }
 }

@@ -12,14 +12,44 @@
         </div>
         <div class="mt">
             <div class="bg-white p-3 rounded border mb-3">
-                <p class="mb-2 fw-bold text-danger">📍 Địa Chỉ Nhận Hàng</p>
-                <div>
-                    <strong>{{ khach_hang.ho_ten }}</strong> <span class="me-5">(+84) {{ khach_hang.sdt }}</span>
-                    <span class="me-5">Email: {{ khach_hang.email }}</span>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0 fw-bold text-danger">📍 Thông Tin & Địa Chỉ Nhận Hàng</p>
+                    <button v-if="!isEditingAddress" class="btn btn-sm btn-outline-primary" @click="isEditingAddress = true">
+                        <i class="fa-solid fa-pen-to-square"></i> Cập nhật
+                    </button>
+                    <button v-else class="btn btn-sm btn-success" @click="saveAddress()">
+                        <i class="fa-solid fa-check"></i> Xong
+                    </button>
+                </div>
+                
+                <div v-if="!isEditingAddress">
+                    <div v-if="khach_hang.dia_chi && khach_hang.sdt">
+                        <strong>{{ khach_hang.ho_ten }}</strong> <span class="me-4"><i class="fa-solid fa-phone"></i> {{ khach_hang.sdt }}</span>
+                        <span class="me-4"><i class="fa-solid fa-envelope"></i> {{ khach_hang.email }}</span>
+                        <div class="mt-2"><i class="fa-solid fa-location-dot"></i> <strong>Địa chỉ:</strong> {{ khach_hang.dia_chi }} <span class="badge bg-danger ms-2">Mặc Định</span></div>
+                    </div>
+                    <div v-else class="alert alert-warning mb-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Bạn chưa cập nhật đầy đủ Số điện thoại và Địa chỉ. Vui lòng bấm <b>Cập nhật</b> để thêm thông tin giao hàng!
+                    </div>
+                </div>
 
-                    <span class="me-5">Địa chỉ: {{ khach_hang.dia_chi }}</span>
-                    <span class="badge bg-danger ms-2">Mặc Định</span>
-                    <a href="#" class="ms-3 text-primary">Thay Đổi</a>
+                <div v-else class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Họ tên người nhận (*)</label>
+                        <input type="text" class="form-control" v-model="khach_hang.ho_ten" placeholder="Nhập họ tên...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Số điện thoại (*)</label>
+                        <input type="text" class="form-control" v-model="khach_hang.sdt" placeholder="Nhập số điện thoại...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Email</label>
+                        <input type="email" class="form-control" v-model="khach_hang.email" placeholder="Nhập email...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Địa chỉ chi tiết (*)</label>
+                        <input type="text" class="form-control" v-model="khach_hang.dia_chi" placeholder="Nhập địa chỉ nhà, tên đường, phường/xã...">
+                    </div>
                 </div>
             </div>
 
@@ -176,6 +206,7 @@ export default {
     data() {
         return {
             khach_hang: {},
+            isEditingAddress: false,
             del_san_pham: {},
             list_thanh_toan: [],
             create_thanh_toan: {},
@@ -185,15 +216,28 @@ export default {
     },
     mounted() {
         this.getThanhToan();
-        const kh = localStorage.getItem("khach_hang");
-        if (!kh) {
-            this.$toast.error("Vui lòng đăng nhập trước khi đặt hàng!");
-            this.$router.push("/dang-nhap");
-            return;
-        }
-        this.khach_hang = JSON.parse(kh);
+        this.getProfile();
     },
     methods: {
+        saveAddress() {
+            if (!this.khach_hang.ho_ten || !this.khach_hang.sdt || !this.khach_hang.dia_chi) {
+                this.$toast.error("Vui lòng điền đầy đủ Họ Tên, SĐT và Địa chỉ!");
+                return;
+            }
+            this.isEditingAddress = false;
+        },
+        getProfile() {
+            axios.get("http://127.0.0.1:8000/api/khach-hang/profile", {
+                headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
+            }).then((res) => {
+                if (res.data.status) {
+                    this.khach_hang = res.data.data;
+                    if (!this.khach_hang.sdt || !this.khach_hang.dia_chi) {
+                        this.isEditingAddress = true;
+                    }
+                }
+            });
+        },
         tongThanhToan() {
             // Tính tổng tiền của tất cả sản phẩm trong giỏ hàng
             let tong = 0;
@@ -211,6 +255,16 @@ export default {
             return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number);
         },
         datHang() {
+            if (this.isEditingAddress) {
+                this.$toast.warning("Vui lòng hoàn tất cập nhật địa chỉ trước khi đặt hàng!");
+                return;
+            }
+            if (!this.khach_hang.sdt || !this.khach_hang.dia_chi) {
+                this.$toast.error("Vui lòng cập nhật đầy đủ Địa chỉ và Số điện thoại giao hàng!");
+                this.isEditingAddress = true;
+                return;
+            }
+
             const kh = this.khach_hang;
             const sanPhamMua = this.list_thanh_toan.map((item) => ({
                 ma_sp: item.ma_sp,
@@ -236,11 +290,11 @@ export default {
                     if (res.data.status) {
                         this.$toast.success("Đặt hàng thành công! Mã hóa đơn: " + res.data.ma_hoa_don);
 
-                        // Xóa từng sản phẩm vừa mua khỏi giỏ hàng (gọi API xóa theo ma_kh và ma_sp)
                         const promises = sanPhamMua.map((sp) => {
                             return axios.post("http://127.0.0.1:8000/api/khach-hang/gio-hang/remove", {
-                                ma_kh: kh.ma_kh,
                                 ma_sp: sp.ma_sp,
+                            }, {
+                                headers: { Authorization: "Bearer " + localStorage.getItem("khach_hang_login") }
                             });
                         });
 
@@ -270,9 +324,13 @@ export default {
         }
         ,
         getThanhToan() {
-            axios.get("http://127.0.0.1:8000/api/khach-hang/thanh-toan/get-data").then((res) => {
-                this.list_thanh_toan = res.data.data;
-            });
+            const data = localStorage.getItem("san_pham_thanh_toan");
+            if (data) {
+                this.list_thanh_toan = JSON.parse(data);
+            } else {
+                this.$toast.error("Không có sản phẩm nào để thanh toán");
+                this.$router.push("/khach-hang/gio-hang");
+            }
         },
 
     },
