@@ -18,39 +18,39 @@ class DanhMucController
         ]);
     }
 
-public function addData(Request $request)
-{
-    // Lấy tất cả mã đã có trong DB
-    $usedCodes = DanhMuc::pluck('ma_dm')->toArray();
+    public function addData(Request $request)
+    {
+        // Lấy tất cả mã đã có trong DB
+        $usedCodes = DanhMuc::pluck('ma_dm')->toArray();
 
-    // Tạo mảng chỉ chứa phần số sau DM (ví dụ: 'DM02' => 2)
-    $numericCodes = array_map(function ($code) {
-        return (int)str_replace('DM', '', $code);
-    }, $usedCodes);
+        // Tạo mảng chỉ chứa phần số sau DM (ví dụ: 'DM02' => 2)
+        $numericCodes = array_map(function ($code) {
+            return (int)str_replace('DM', '', $code);
+        }, $usedCodes);
 
-    sort($numericCodes); // Sắp xếp tăng dần
+        sort($numericCodes); // Sắp xếp tăng dần
 
-    // Tìm số nhỏ nhất chưa dùng
-    $newNumber = 1;
-    while (in_array($newNumber, $numericCodes)) {
-        $newNumber++;
+        // Tìm số nhỏ nhất chưa dùng
+        $newNumber = 1;
+        while (in_array($newNumber, $numericCodes)) {
+            $newNumber++;
+        }
+
+        // Tạo mã mới: DM01, DM02,...
+        $newMaDm = 'DM' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
+
+        // Tạo mới danh mục
+        DanhMuc::create([
+            'ma_dm'         => $newMaDm,
+            'ten_danh_muc'  => $request->ten_danh_muc,
+            'trang_thai'    => $request->trang_thai,
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Thêm danh mục "' . $request->ten_danh_muc . '" thành công với mã: ' . $newMaDm,
+        ]);
     }
-
-    // Tạo mã mới: DM01, DM02,...
-    $newMaDm = 'DM' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
-
-    // Tạo mới danh mục
-    DanhMuc::create([
-        'ma_dm'         => $newMaDm,
-        'ten_danh_muc'  => $request->ten_danh_muc,
-        'trang_thai'    => $request->trang_thai,
-    ]);
-
-    return response()->json([
-        'status'  => true,
-        'message' => 'Thêm danh mục "' . $request->ten_danh_muc . '" thành công với mã: ' . $newMaDm,
-    ]);
-}
 
 
     public function update(Request $request)

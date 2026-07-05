@@ -1,29 +1,15 @@
 <?php
 
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\ChiTietDonHangController;
-use App\Http\Controllers\ChucVuController;
-use App\Http\Controllers\ChucNangController;
-use App\Http\Controllers\ClientHomeController;
 use App\Http\Controllers\DanhGiaController;
 use App\Http\Controllers\DanhMucController;
-use App\Http\Controllers\DonDatHangController;
-use App\Http\Controllers\DonHangController;
 use App\Http\Controllers\GioHangController;
 use App\Http\Controllers\HoaDonController;
 use App\Http\Controllers\KhachHangController;
-use App\Http\Controllers\MonAnController;
 use App\Http\Controllers\NhanVienController;
-use App\Http\Controllers\PhanQuyenController;
-use App\Http\Controllers\QuanAnController;
-use App\Http\Controllers\QuanHuyenController;
 use App\Http\Controllers\SanPhamController;
-use App\Http\Controllers\ShipperController;
 use App\Http\Controllers\ThanhToanController;
 use App\Http\Controllers\ThongKeController;
-use App\Http\Controllers\TinhThanhController;
-use App\Http\Controllers\VoucherController;
-use App\Models\ChiTietDonHang;
 use App\Models\ThanhToan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
