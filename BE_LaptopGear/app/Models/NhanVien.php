@@ -25,7 +25,7 @@ class NhanVien extends Authenticatable
         'mat_khau',
         'email',
         'trang_thai',
-        'ghi_chu'
+        'ghi_chu',
     ];
     const TAM_TAT   = 0;
     const HOAT_DONG     = 1;
