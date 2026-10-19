@@ -197,8 +197,8 @@ class HoaDonController
             ], 404);
         }
 
-        $HoaDon->tinh_trang = ($HoaDon->tinh_trang == 1) ? 0 : 1;
-        $HoaDon->save();
+        $newStatus = ($HoaDon->tinh_trang == 1) ? 0 : 1;
+        HoaDon::where('ma_hoa_don', $ma)->update(['tinh_trang' => $newStatus]);
 
         return response()->json([
             'status'  => true,

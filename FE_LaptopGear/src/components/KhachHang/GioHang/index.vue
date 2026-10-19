@@ -61,7 +61,7 @@
                     </div>
 
                     <!-- Số Tiền -->
-                    <div class="col-2 text-danger fw-bold">{{ formatVND(item.don_gia) }}</div>
+                    <div class="col-2 text-danger fw-bold">{{ formatVND(item.don_gia * item.so_luong) }}</div>
 
                     <!-- Thao Tác -->
                     <div class="col-2">
@@ -118,7 +118,7 @@
                         <label class="form-check-label" for="checkAll">Chọn Tất Cả</label>
                     </div>
 
-                    <a href="#" class="text-decoration-none">Xóa</a>
+                    <a href="#" class="text-decoration-none" @click.prevent="xoaNhieuSanPham()">Xóa</a>
                     <a href="#" class="text-decoration-none">Bỏ sản phẩm không hoạt động</a>
                     <a href="#" class="text-danger fw-bold text-decoration-none">Lưu vào mục Đã thích</a>
                 </div>
@@ -283,4 +283,3 @@ export default {
     padding-top: 0.5rem;
 }
 </style>
-.

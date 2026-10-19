@@ -365,9 +365,17 @@ export default {
     };
   },
   mounted() {
-    console.log(this.id_san_pham);
     this.loadData();
     this.getLaptop();
+  },
+  watch: {
+    '$route.params.id_san_pham'(newId) {
+      if (newId) {
+        this.id_san_pham = newId;
+        this.loadData();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
   },
   computed: {
     moTaXuLy() {

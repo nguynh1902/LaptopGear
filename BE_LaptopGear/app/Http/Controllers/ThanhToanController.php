@@ -75,11 +75,24 @@ class ThanhToanController extends Controller
     }
     public function destroy(Request $request)
     {
-        ThanhToan::where('id', $request->id)->delete();
+        if ($request->filled('id')) {
+            ThanhToan::where('id', $request->id)->delete();
+        } else if ($request->filled('ma_sp')) {
+            $query = ThanhToan::where('ma_sp', $request->ma_sp);
+            if ($request->filled('ma_kh')) {
+                $query->where('ma_kh', $request->ma_kh);
+            }
+            $query->delete();
+        }
+
+        // Also clean up from gio_hangs if matching
+        if ($request->filled('ma_sp')) {
+            DB::table('gio_hangs')->where('ma_sp', $request->ma_sp)->delete();
+        }
 
         return response()->json([
             'status'    => true,
-            'message'   => 'Xóa HoaDon thành công',
+            'message'   => 'Xóa thành công',
         ]);
     }
 }

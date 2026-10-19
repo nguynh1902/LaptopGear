@@ -147,6 +147,21 @@ export default {
       },
     };
   },
+  mounted() {
+    const today = new Date();
+    const priorDate = new Date();
+    priorDate.setDate(today.getDate() - 30);
+
+    const formatDate = (d) => d.toISOString().split("T")[0];
+    const begin = formatDate(priorDate);
+    const end = formatDate(today);
+
+    this.search1 = { begin, end };
+    this.search2 = { begin, end };
+
+    this.thongKeKhachHang();
+    this.thongKeHoaDon();
+  },
   methods: {
     thongKeKhachHang() {
       axios

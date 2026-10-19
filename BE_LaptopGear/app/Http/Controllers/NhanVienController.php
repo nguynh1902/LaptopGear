@@ -6,6 +6,7 @@ use App\Models\NhanVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class NhanVienController
 {
@@ -14,9 +15,9 @@ class NhanVienController
         $user = Auth::guard('sanctum')->user();
         if ($user) {
             return response()->json([
-                'status'    => 1,
-                'ho_ten_admin'    => $user->ho_ten,
-                // 'avatar'    => $user_login->avatar,
+                'status'        => 1,
+                'ho_ten_admin'  => $user->ho_ten,
+                'admin'         => $user,
             ]);
         } else {
             return response()->json([
@@ -163,23 +164,67 @@ public function updateAdmin(Request $request)
     }
 
 
-        public function dangNhap(Request $request)
+    public function dangNhap(Request $request)
     {
-        $check = NhanVien::where('email', $request->email)
-            ->where('mat_khau', $request->mat_khau)->first();
+        $check = NhanVien::where('email', $request->email)->first();
 
-        if ($check) {
+        if ($check && ($check->mat_khau === $request->mat_khau || Hash::check($request->mat_khau, $check->mat_khau))) {
             return response()->json([
-                'status' => true,
-                'message' => 'Đăng nhập thành công',
-                // 'data' => $check, // ← Trả lại thông tin người dùng
-                'token'     => $check->createToken('token_admin')->plainTextToken,
+                'status'        => true,
+                'message'       => 'Đăng nhập thành công',
+                'admin'         => $check,
+                'ho_ten_admin'  => $check->ho_ten,
+                'token'         => $check->createToken('token_admin')->plainTextToken,
             ]);
         } else {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Tài khoản sai email hoặc password',
             ]);
         }
+    }
+
+    public function doiMatKhau(Request $request)
+    {
+        $user = Auth::guard('sanctum')->user();
+        if (!$user) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Bạn chưa đăng nhập!',
+            ]);
+        }
+
+        $matKhauCu = $request->mat_khau_cu;
+        $matKhauMoi = $request->mat_khau_moi;
+        $xacNhan = $request->xac_nhan_mat_khau_moi;
+
+        if ($user->mat_khau !== $matKhauCu && !Hash::check($matKhauCu, $user->mat_khau)) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Mật khẩu hiện tại không đúng!',
+            ]);
+        }
+
+        if (empty($matKhauMoi) || strlen($matKhauMoi) < 6) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Mật khẩu mới phải từ 6 ký tự trở lên!',
+            ]);
+        }
+
+        if ($matKhauMoi !== $xacNhan) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Mật khẩu xác nhận không khớp!',
+            ]);
+        }
+
+        $user->mat_khau = $matKhauMoi;
+        $user->save();
+
+        return response()->json([
+            'status'  => 1,
+            'message' => 'Đổi mật khẩu thành công!',
+        ]);
     }
 }

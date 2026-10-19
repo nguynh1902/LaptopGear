@@ -56,28 +56,42 @@
 
                     <div class="user-info ps-3">
                         <p class="user-name mb-0">{{ ho_ten }}</p>
-                        <p class="designattion mb-0">Khách Hàng</p>
+                        <p class="designattion mb-0">{{ isLoggedIn ? 'Khách Hàng' : 'Tài khoản' }}</p>
                     </div>
                 </a>
 
                 <ul class="dropdown-menu dropdown-menu-end">
+                    <template v-if="isLoggedIn">
+                        <li>
+                            <router-link 
+                                to="/khach-hang/profile"
+                                class="dropdown-item">
+                                <i class="bx bx-user"></i>
+                                <span>Profile</span>
+                            </router-link>
+                        </li>
 
-                    <li>
-                        <router-link 
-                            to="/khach-hang/profile"
-                            class="dropdown-item">
-                            <i class="bx bx-user"></i>
-                            <span>Profile</span>
-                        </router-link>
-                    </li>
-
-                    <li>
-                        <a @click="logout()" class="dropdown-item" href="javascript:;">
-                            <i class="bx bx-log-out-circle"></i>
-                            <span>Logout</span>
-                        </a>
-                    </li>
-
+                        <li>
+                            <a @click="logout()" class="dropdown-item" href="javascript:;">
+                                <i class="bx bx-log-out-circle"></i>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </template>
+                    <template v-else>
+                        <li>
+                            <router-link to="/khach-hang/dang-nhap" class="dropdown-item">
+                                <i class="bx bx-log-in-circle"></i>
+                                <span>Đăng nhập</span>
+                            </router-link>
+                        </li>
+                        <li>
+                            <router-link to="/khach-hang/dang-ky" class="dropdown-item">
+                                <i class="bx bx-user-plus"></i>
+                                <span>Đăng ký</span>
+                            </router-link>
+                        </li>
+                    </template>
                 </ul>
             </div>
 
@@ -92,25 +106,31 @@ export default {
     data() {
         return {
             khach_hang: {},
-            ho_ten: localStorage.getItem("ho_ten_khach_hang"),
-            avatar: localStorage.getItem("avatar"),
+            ho_ten: localStorage.getItem("ho_ten_khach_hang") || "Khách",
+            avatar: localStorage.getItem("avatar_khach_hang") || "/img/logo.png",
+            isLoggedIn: !!localStorage.getItem("khach_hang_login"),
             noi_dung_tim: "",
         };
     },
 
     mounted() {
-        const kh = localStorage.getItem("khach_hang");
-
-        if (!kh) {
-            this.$toast.error("Vui lòng đăng nhập trước khi đặt hàng!");
-            this.$router.push("/dang-nhap");
-            return;
-        }
-
-        this.khach_hang = JSON.parse(kh);
+        this.syncUser();
     },
 
     methods: {
+        syncUser() {
+            this.isLoggedIn = !!localStorage.getItem("khach_hang_login");
+            this.ho_ten = localStorage.getItem("ho_ten_khach_hang") || (this.isLoggedIn ? "Khách Hàng" : "Khách");
+            this.avatar = localStorage.getItem("avatar_khach_hang") || "/img/logo.png";
+            const kh = localStorage.getItem("khach_hang");
+            if (kh) {
+                try {
+                    this.khach_hang = JSON.parse(kh);
+                } catch (e) {
+                    this.khach_hang = {};
+                }
+            }
+        },
 
         timKiem() {
             this.$router.push({
@@ -122,39 +142,34 @@ export default {
         },
 
         logout() {
-            axios.get("http://127.0.0.1:8000/api/khach-hang/dang-xuat", {
-                headers: {
-                    Authorization:
-                        "Bearer " + localStorage.getItem("khach_hang_login"),
-                },
-            })
-            .then((res) => {
+            const token = localStorage.getItem("khach_hang_login");
+            const clearLocal = () => {
+                localStorage.removeItem("khach_hang_login");
+                localStorage.removeItem("khach_hang");
+                localStorage.removeItem("ho_ten_khach_hang");
+                localStorage.removeItem("avatar_khach_hang");
+                this.isLoggedIn = false;
+                this.ho_ten = "Khách";
+                this.avatar = "/img/logo.png";
+                this.$router.push("/khach-hang/dang-nhap");
+            };
 
-                if (res.data.status) {
-                    this.$toast.success(res.data.message);
-
-                    localStorage.removeItem("khach_hang_login");
-
-                    this.$router.push("/khach-hang/dang-nhap");
-                } 
-                else {
-                    this.$toast.error(res.data.message);
-                }
-
-            })
-            .catch((error) => {
-
-                if (error.response && error.response.data.errors) {
-
-                    const list = Object.values(error.response.data.errors);
-
-                    list.forEach((v) => {
-                        this.$toast.error(v[0]);
-                    });
-
-                }
-
-            });
+            if (token) {
+                axios.get("http://127.0.0.1:8000/api/khach-hang/dang-xuat", {
+                    headers: {
+                        Authorization: "Bearer " + token,
+                    },
+                })
+                .then((res) => {
+                    this.$toast.success(res.data.message || "Đăng xuất thành công");
+                    clearLocal();
+                })
+                .catch(() => {
+                    clearLocal();
+                });
+            } else {
+                clearLocal();
+            }
         },
     },
 };

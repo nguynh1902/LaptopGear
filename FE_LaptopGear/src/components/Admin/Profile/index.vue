@@ -177,22 +177,33 @@ export default {
         }
     },
     mounted() {
-
-         const adminStr = localStorage.getItem("admin");
-  if (!adminStr) {
-    this.$router.push("/admin/dang-nhap");
-    return;
-  }
-
-  // Parse chuỗi JSON thành object
-  this.admin = JSON.parse(adminStr);
+        const adminStr = localStorage.getItem("admin");
+        if (adminStr) {
+            try {
+                this.admin = JSON.parse(adminStr);
+            } catch (e) {
+                this.admin = {};
+            }
+        }
+        const token = localStorage.getItem("admin_login");
+        if (token) {
+            axios.get("http://127.0.0.1:8000/api/admin/check-token", {
+                headers: { Authorization: "Bearer " + token }
+            }).then(res => {
+                if (res.data?.admin) {
+                    this.admin = res.data.admin;
+                    localStorage.setItem("admin", JSON.stringify(this.admin));
+                }
+            }).catch(() => {});
+        }
     },
     methods: {
         doiMatKhau() {
+            const token = localStorage.getItem("admin_login");
             axios
                 .post("http://127.0.0.1:8000/api/admin/doi-mat-khau", this.doi_mat_khau, {
                     headers: {
-                        Authorization: "Bearer " + localStorage.getItem("nhan_vien_login"),
+                        Authorization: "Bearer " + token,
                     },
                 })
                 .then((res) => {
@@ -202,17 +213,21 @@ export default {
                             mat_khau_cu: '',
                             mat_khau_moi: '',
                             xac_nhan_mat_khau_moi: ''
-                        }
+                        };
                     } else {
                         this.$toast.error(res.data.message);
                     }
                 })
                 .catch((res) => {
-                    const list = Object.values(res.response.data.errors);
-                    list.forEach((v, i) => {
-                        this.$toast.error(v[0]);
-                    });
-                })
+                    if (res.response?.data?.errors) {
+                        const list = Object.values(res.response.data.errors);
+                        list.forEach((v) => {
+                            this.$toast.error(v[0]);
+                        });
+                    } else {
+                        this.$toast.error(res.response?.data?.message || "Đổi mật khẩu thất bại");
+                    }
+                });
         },
 
 updateProfile() {

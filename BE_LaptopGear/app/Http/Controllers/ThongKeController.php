@@ -11,8 +11,11 @@ class ThongKeController
 {
     public function duyetKhachHang(Request $request)
     {
-        $data = KhachHang::whereDate('created_at', '>=', $request->begin)
-            ->whereDate('created_at', '<=', $request->end)
+        $begin = $request->begin ?: now()->subDays(30)->toDateString();
+        $end = $request->end ?: now()->toDateString();
+
+        $data = KhachHang::whereDate('created_at', '>=', $begin)
+            ->whereDate('created_at', '<=', $end)
             ->select(
                 DB::raw('DATE(created_at) AS ngay_dang_ky'),
                 DB::raw('COUNT(id) AS so_khach_hang_moi')
@@ -40,17 +43,20 @@ class ThongKeController
         ]);
     }
 
-public function duyetHoaDon(Request $request)
-{
-    $data = HoaDon::whereDate('created_at', '>=', $request->begin)
-        ->whereDate('created_at', '<=', $request->end)
-        ->select(
-            DB::raw('DATE(created_at) AS ngay_created_at'),
-            DB::raw('COUNT(id) AS so_hoa_don_theo_ngay')
-        )
-        ->groupBy('ngay_created_at')
-        ->orderBy('ngay_created_at')
-        ->get();
+    public function duyetHoaDon(Request $request)
+    {
+        $begin = $request->begin ?: now()->subDays(30)->toDateString();
+        $end = $request->end ?: now()->toDateString();
+
+        $data = HoaDon::whereDate('created_at', '>=', $begin)
+            ->whereDate('created_at', '<=', $end)
+            ->select(
+                DB::raw('DATE(created_at) AS ngay_created_at'),
+                DB::raw('COUNT(id) AS so_hoa_don_theo_ngay')
+            )
+            ->groupBy('ngay_created_at')
+            ->orderBy('ngay_created_at')
+            ->get();
 
     return response()->json([
         'status' => true,

@@ -131,20 +131,17 @@
 
                 <!-- Tabs -->
                 <div class="mt-3 mb-3">
-                    <form action="{{ url('/vnpay_payment') }}" method="POST">
-                        <input type="hidden" name="total_vnpay" value="{{ $total_after }}">
-                        <button type="submit" class="btn btn-danger check_out" name="redirect">
-                            Thanh toán VNPAY
-                        </button>
-                    </form>
+                    <button type="button" class="btn btn-danger check_out" @click="thanhToanVNPAY()">
+                        <i class="fa-solid fa-credit-card me-2"></i>Thanh toán VNPAY
+                    </button>
                 </div>
 
                 <!-- Ví / ngân hàng -->
                 <div class="border-top pt-3">
                     <div class="form-check d-flex align-items-center">
-                        <input class="form-check-input me-2" type="radio" name="pay" id="mbbank" checked />
-                        <label class="form-check-label d-flex align-items-center" for="mbbank">
-                            <!-- <img src="../../../../img/QR.png" width="50%" class="me-2" /> -->
+                        <input class="form-check-input me-2" type="radio" name="pay" id="cod" checked />
+                        <label class="form-check-label d-flex align-items-center" for="cod">
+                            <span class="fw-semibold">Thanh toán khi nhận hàng (COD)</span>
                         </label>
                     </div>
                 </div>
@@ -185,15 +182,48 @@ export default {
     },
     mounted() {
         this.getThanhToan();
-        const kh = localStorage.getItem("khach_hang");
-        if (!kh) {
+        const token = localStorage.getItem("khach_hang_login");
+        if (!token) {
             this.$toast.error("Vui lòng đăng nhập trước khi đặt hàng!");
-            this.$router.push("/dang-nhap");
+            this.$router.push("/khach-hang/dang-nhap");
             return;
         }
-        this.khach_hang = JSON.parse(kh);
+
+        const kh = localStorage.getItem("khach_hang");
+        if (kh) {
+            try {
+                this.khach_hang = JSON.parse(kh);
+            } catch (e) {
+                this.khach_hang = {};
+            }
+        }
+        if (!this.khach_hang || !this.khach_hang.ho_ten) {
+            this.khach_hang = {
+                ho_ten: localStorage.getItem("ho_ten_khach_hang") || "Khách Hàng",
+                email: "",
+                sdt: "",
+                dia_chi: "",
+            };
+        }
     },
     methods: {
+        thanhToanVNPAY() {
+            const tongTien = this.tongThanhToan();
+            axios
+                .post("http://127.0.0.1:8000/api/vnpay_payment", {
+                    total_vnpay: tongTien,
+                })
+                .then((res) => {
+                    if (res.data?.data) {
+                        window.location.href = res.data.data;
+                    } else {
+                        this.$toast.error("Không tạo được liên kết thanh toán VNPAY");
+                    }
+                })
+                .catch(() => {
+                    this.$toast.error("Lỗi kết nối cổng thanh toán VNPAY");
+                });
+        },
         tongThanhToan() {
             // Tính tổng tiền của tất cả sản phẩm trong giỏ hàng
             let tong = 0;
@@ -205,7 +235,8 @@ export default {
             const phiVanChuyen = 45100; // tùy chỉnh theo nhu cầu
             const voucherGiamGia = 2000; // giảm giá
 
-            return tong + phiVanChuyen - voucherGiamGia;
+            const res = tong + phiVanChuyen - voucherGiamGia;
+            return res > 0 ? res : 0;
         },
         formatVND(number) {
             return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number);
@@ -265,10 +296,9 @@ export default {
                 })
                 .catch((err) => {
                     this.$toast.error("Đặt hàng thất bại!");
-                    console.error(err.response?.data || err.message); 0
+                    console.error(err.response?.data || err.message);
                 });
-        }
-        ,
+        },
         getThanhToan() {
             axios.get("http://127.0.0.1:8000/api/khach-hang/thanh-toan/get-data").then((res) => {
                 this.list_thanh_toan = res.data.data;

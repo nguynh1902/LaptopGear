@@ -3,7 +3,7 @@
         <nav class="navbar navbar-expand">
             <div class="topbar-logo-header">
                 <div class="">
-                    <img src="../../../../img/Admin.png" style="width: 150px" class="logo-icon mb-1" alt="logo icon" />
+                    <img src="/img/Admin.png" style="width: 150px" class="logo-icon mb-1" alt="logo icon" />
                 </div>
             </div>
             <div class="mobile-toggle-menu"><i class="bx bx-menu"></i></div>
@@ -19,22 +19,21 @@
             <div class="user-box dropdown">
                 <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#"
                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="../../../../img/logo1.png" class="user-img" alt="user avatar" />
+                    <img src="/img/logo1.png" class="user-img" alt="user avatar" />
                     <div class="user-info ps-3">
                         <p class="user-name mb-0">{{ ho_ten_admin }}</p>
-                        <p class="designattion mb-0">{{ admin.vai_tro }}</p>
+                        <p class="designattion mb-0">{{ admin.vai_tro || 'Quản trị viên' }}</p>
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
                         <router-link to="/admin/profile">
-                            <a class="dropdown-item" href="/admin/profile"><i
-                                    class="bx bx-user"></i><span>Profile</span></a>
+                            <span class="dropdown-item"><i class="bx bx-user"></i><span>Profile</span></span>
                         </router-link>
                     </li>
                     <li>
                         <a v-on:click="logout()" class="dropdown-item" href="javascript:;"><i
-                                    class="bx bx-log-out-circle"></i><span>Logout</span></a>
+                                class="bx bx-log-out-circle"></i><span>Logout</span></a>
                     </li>
                     
                 </ul>
@@ -49,89 +48,49 @@ export default {
     data() {
         return {
             admin: {},
-            ho_ten_admin: localStorage.getItem('ho_ten_admin'),
+            ho_ten_admin: localStorage.getItem('ho_ten_admin') || "Quản trị viên",
         };
     },
     mounted() {
+        this.ho_ten_admin = localStorage.getItem('ho_ten_admin') || "Quản trị viên";
         const adminStr = localStorage.getItem("admin");
-        if (!adminStr) {
-            this.$router.push("/admin/dang-nhap");
-            return;
+        if (adminStr) {
+            try {
+                this.admin = JSON.parse(adminStr);
+            } catch (e) {
+                this.admin = {};
+            }
         }
-
-        // Parse chuỗi JSON thành object
-        this.admin = JSON.parse(adminStr);
     },
 
     methods: {
         logout() {
-            axios
-                .get("http://127.0.0.1:8000/api/admin/dang-xuat", {
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("nhan_vien_login"),
-                    },
-                })
-                .then((res) => {
-                    if (res.data.status) {
-                        this.$toast.success(res.data.message);
-                        localStorage.removeItem("nhan_vien_login");
-                        this.$router.push("/admin/dang-nhap");
-                    } else {
-                        this.$toast.error(res.data.message);
-                    }
-                })
-                .catch((res) => {
-                    const list = Object.values(res.res.data.errors);
-                    list.forEach((v, i) => {
-                        this.$toast.error(v[0]);
+            const token = localStorage.getItem("admin_login");
+            const clearAdmin = () => {
+                localStorage.removeItem("admin_login");
+                localStorage.removeItem("admin");
+                localStorage.removeItem("ho_ten_admin");
+                this.$router.push("/admin/dang-nhap");
+            };
+
+            if (token) {
+                axios
+                    .get("http://127.0.0.1:8000/api/admin/dang-xuat", {
+                        headers: {
+                            Authorization: "Bearer " + token,
+                        },
+                    })
+                    .then((res) => {
+                        this.$toast.success(res.data.message || "Đăng xuất thành công");
+                        clearAdmin();
+                    })
+                    .catch(() => {
+                        clearAdmin();
                     });
-                });
+            } else {
+                clearAdmin();
+            }
         },
-        logout() {
-        	axios.get('http://127.0.0.1:8000/api/admin/dang-xuat', {
-        		headers: {
-        			Authorization: "Bearer " + localStorage.getItem("admin_login"),
-        		},
-        	})
-        		.then(res => {
-        			if (res.data.status) {
-        				this.$toast.success(res.data.message);
-        				localStorage.removeItem('admin_login');
-        				this.$router.push('/admin/dang-nhap');
-        			} else {
-        				this.$toast.error(res.data.message);
-        			}
-        		})
-        		.catch(res => {
-        			const list = Object.values(res.res.data.errors);
-        			list.forEach((v, i) => {
-        				this.$toast.error(v[0]);
-        			});
-        		});
-        },
-        // logoutAll() {
-        //     axios
-        //         .get("http://127.0.0.1:8000/api/admin/dang-xuat-tat-ca", {
-        //             headers: {
-        //                 Authorization: "Bearer " + localStorage.getItem("nhan_vien_login"),
-        //             },
-        //         })
-        //         .then((res) => {
-        //             if (res.data.status) {
-        //                 this.$toast.success(res.data.message);
-        //                 localStorage.removeItem("nhan_vien_login");
-        //                 this.$router.push("/admin/dang-nhap");
-        //             } else {
-        //                 this.$toast.error(res.data.message);
-        //             }
-        //         })
-        //         .catch((res) => {
-        //             const list = Object.values(res.res.data.errors);
-        //             list.forEach((v, i) => {
-        //                 this.$toast.error(v[0]);
-        //             });
-        //         });
-        // },
     },
 };
 </script>

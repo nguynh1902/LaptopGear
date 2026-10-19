@@ -58,25 +58,10 @@
                     <td class="align-middle text-wrap text-center">
                       {{ item.sdt }}
                     </td>
-                    <td
-                      @click="doiTrangThai(item)"
-                      class="align-middle text-center text-nowrap"
-                      style="width: 140px"
-                    >
-                      <div
-                        v-if="item.gioi_tinh == 0"
-                        class="text-dark w-100"
-                        style="color: white"
-                      >
-                        Nữ
-                      </div>
-                      <div
-                        v-if="item.gioi_tinh == 1"
-                        class="text-dark w-100"
-                        style="color: white"
-                      >
-                        Nam
-                      </div>
+                    <td class="align-middle text-center text-nowrap" style="width: 140px">
+                      <span v-if="item.gioi_tinh == 0" class="badge bg-info text-dark">Nữ</span>
+                      <span v-else-if="item.gioi_tinh == 1" class="badge bg-primary">Nam</span>
+                      <span v-else class="badge bg-secondary">Khác</span>
                     </td>
                     <td
                       class="align-middle text-center text-nowrap"

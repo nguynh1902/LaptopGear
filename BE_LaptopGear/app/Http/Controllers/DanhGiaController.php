@@ -15,9 +15,15 @@ class DanhGiaController
             'data' => $data
         ]);
     }
- public function changeStatus(Request $request)
+    public function changeStatus(Request $request)
     {
         $DanhGia = DanhGia::where('id', $request->id)->first();
+        if (!$DanhGia) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Không tìm thấy đánh giá',
+            ], 404);
+        }
         // Đảo trạng thái: nếu đang hoạt động (1) thì chuyển thành tạm tắt (0), ngược lại thì chuyển thành hoạt động
         $DanhGia->trang_thai = ($DanhGia->trang_thai == DanhGia::HOAT_DONG) ? DanhGia::TAM_TAT : DanhGia::HOAT_DONG;
 
@@ -26,6 +32,16 @@ class DanhGiaController
         return response()->json([
             'status'  => true,
             'message' => 'Thay đổi trạng thái DanhGia thành công',
+        ]);
+    }
+
+    public function destroy(Request $request)
+    {
+        DanhGia::where('id', $request->id)->delete();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Xóa đánh giá thành công',
         ]);
     }
 }

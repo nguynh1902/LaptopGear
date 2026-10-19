@@ -31,7 +31,7 @@
                                                     <i class="fa-solid fa-lock"></i>
                                                 </span>
                                                 <input v-model="user.mat_khau"
-                                                    @keydown.enter="dangNhap()" type="password"
+                                                    @keydown.enter="Login()" type="password"
                                                     class="form-control border-start-0" placeholder="Mật khẩu" />
                                             </div>
                                         </div>
@@ -74,16 +74,26 @@ export default {
                     if (res.data.status) {
                         this.$toast.success(res.data.message);
                         localStorage.setItem('admin_login', res.data.token);
+                        if (res.data.admin) {
+                            localStorage.setItem('admin', JSON.stringify(res.data.admin));
+                        }
+                        if (res.data.ho_ten_admin) {
+                            localStorage.setItem('ho_ten_admin', res.data.ho_ten_admin);
+                        }
                         this.$router.push('/admin/thong-ke');
                     } else {
                         this.$toast.error(res.data.message);
                     }
                 })
                 .catch((res) => {
-                    const list = Object.values(res.response.data.errors);
-                    list.forEach((v, i) => {
-                        this.$toast.error(v[0]);
-                    });
+                    if (res.response?.data?.errors) {
+                        const list = Object.values(res.response.data.errors);
+                        list.forEach((v) => {
+                            this.$toast.error(v[0]);
+                        });
+                    } else {
+                        this.$toast.error(res.response?.data?.message || "Đăng nhập thất bại");
+                    }
                 })
         }
     },

@@ -68,6 +68,7 @@ class KhachHangController
                 'status'    => 1,
                 'ho_ten'    => $user_login->ho_ten,
                 'avatar'    => $user_login->avatar,
+                'data'      => $user_login,
             ]);
         } else {
             return response()->json([
@@ -79,20 +80,21 @@ class KhachHangController
 
     public function dangNhap(Request $request)
     {
-        $check = KhachHang::where('email', $request->email)
-            ->where('mat_khau', $request->mat_khau)->first();
+        $check = KhachHang::where('email', $request->email)->first();
 
-        if ($check) {
+        if ($check && ($check->mat_khau === $request->mat_khau || Hash::check($request->mat_khau, $check->mat_khau))) {
             return response()->json([
-                'status' => true,
-                'message' => 'Đăng nhập thành công',
-                'data' => $check, // ← Trả lại thông tin người dùng
+                'status'    => true,
+                'message'   => 'Đăng nhập thành công',
+                'data'      => $check,
+                'ho_ten'    => $check->ho_ten,
+                'avatar'    => $check->avatar,
                 'token'     => $check->createToken('token_khach_hang')->plainTextToken,
             ]);
         } else {
             return response()->json([
-                'status' => false,
-                'message' => 'Tài khoản sai email hoặc password',
+                'status'    => false,
+                'message'   => 'Tài khoản sai email hoặc password',
             ]);
         }
     }
@@ -112,12 +114,12 @@ class KhachHangController
     {
         KhachHang::where('id', $request->id)->update([
             'ma_kh'         => $request->ma_kh,
-            'mat_khau'     => $request->mat_khau,
-            'ho_ten'       => $request->ho_ten,
-            'email'      => $request->email,
-            'dia_chi'           => $request->dia_chi,
-            'sdt'         => $request->sdt,
-            'gioi_tinh'    => $request->gioi_tinh,
+            'mat_khau'      => $request->mat_khau,
+            'ho_ten'        => $request->ho_ten,
+            'email'         => $request->email,
+            'dia_chi'       => $request->dia_chi,
+            'sdt'           => $request->sdt,
+            'gioi_tinh'     => $request->gioi_tinh,
         ]);
 
         return response()->json([
@@ -127,19 +129,31 @@ class KhachHangController
     }
     public function updateKhachHang(Request $request)
     {
-        KhachHang::where('id', $request->id)->update([
-            'ma_kh'         => $request->ma_kh,
-            // 'mat_khau'     => $request->mat_khau,
-            'ho_ten'       => $request->ho_ten,
-            'email'      => $request->email,
-            // 'dia_chi'           => $request->dia_chi,
-            'sdt'         => $request->sdt,
-            'gioi_tinh'    => $request->gioi_tinh,
-        ]);
+        $user = Auth::guard('sanctum')->user();
+        $id = $user ? $user->id : $request->id;
+
+        if (!$id) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Không tìm thấy thông tin khách hàng',
+            ], 404);
+        }
+
+        $updateData = [];
+        if ($request->has('ho_ten')) $updateData['ho_ten'] = $request->ho_ten;
+        if ($request->has('email')) $updateData['email'] = $request->email;
+        if ($request->has('sdt')) $updateData['sdt'] = $request->sdt;
+        if ($request->has('dia_chi')) $updateData['dia_chi'] = $request->dia_chi ?? '';
+        if ($request->has('gioi_tinh')) $updateData['gioi_tinh'] = $request->gioi_tinh;
+        if ($request->has('avatar') && !empty($request->avatar)) $updateData['avatar'] = $request->avatar;
+
+        KhachHang::where('id', $id)->update($updateData);
+        $updatedUser = KhachHang::find($id);
 
         return response()->json([
             'status'    => true,
-            'message'   => 'Cập nhật KhachHang ' . $request->ho_ten . ' thành công',
+            'message'   => 'Cập nhật thông tin thành công',
+            'data'      => $updatedUser,
         ]);
     }
 
@@ -157,23 +171,18 @@ class KhachHangController
 
     public function dangKy(Request $request)
     {
-        // $request->validate([
-        //     'ho_ten' => 'required|string|max:255',
-        //     'email' => 'required|email|unique:khach_hangs,email',
-        //     'sdt' => 'required|digits_between:9,11',
-        //     'dia_chi' => 'nullable|string',
-        //     'gioi_tinh' => 'required|in:0,1', // 0: Nữ, 1: Nam
-        //     'mat_khau' => 'required|min:6',
-        // ]);
         $request->validate([
-            'sdt' => 'required|string|regex:/^0\d{9,10}$/',
-            'email' => 'required|email|unique:khach_hangs,email',
+            'sdt'       => 'required|string|regex:/^0\d{9,10}$/',
+            'email'     => 'required|email|unique:khach_hangs,email',
+            'mat_khau'  => 'required|min:6',
         ], [
-            'sdt.required' => 'Vui lòng nhập số điện thoại.',
-            'sdt.regex'    => 'Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng (bắt đầu bằng 0, có 10 hoặc 11 số).',
-            'email.required' => 'Vui lòng nhập email.',
-            'email.email'    => 'Email không đúng định dạng.',
-            'email.unique'   => 'Email đã tồn tại trong hệ thống.',
+            'sdt.required'      => 'Vui lòng nhập số điện thoại.',
+            'sdt.regex'         => 'Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng (bắt đầu bằng 0, có 10 hoặc 11 số).',
+            'email.required'    => 'Vui lòng nhập email.',
+            'email.email'       => 'Email không đúng định dạng.',
+            'email.unique'      => 'Email đã tồn tại trong hệ thống.',
+            'mat_khau.required' => 'Vui lòng nhập mật khẩu.',
+            'mat_khau.min'      => 'Mật khẩu phải từ 6 ký tự trở lên.',
         ]);
 
         //  Tạo mã KH tự động tăng: KH01, KH02, ...
@@ -183,17 +192,18 @@ class KhachHangController
         $maKH = 'KH' . str_pad($newId, 2, '0', STR_PAD_LEFT);
 
         $khachHang = new KhachHang();
-        $khachHang->ma_kh = $maKH;
-        $khachHang->ho_ten = $request->ho_ten;
-        $khachHang->email = $request->email;
-        $khachHang->sdt = $request->sdt;
-        $khachHang->dia_chi = $request->dia_chi;
-        $khachHang->gioi_tinh = $request->gioi_tinh;
-        $khachHang->mat_khau = Hash::make($request->mat_khau);
+        $khachHang->ma_kh       = $maKH;
+        $khachHang->ho_ten      = $request->ho_ten ?? 'Khách Hàng';
+        $khachHang->email       = $request->email;
+        $khachHang->sdt         = $request->sdt;
+        $khachHang->dia_chi     = $request->dia_chi ?? '';
+        $khachHang->gioi_tinh   = $request->gioi_tinh ?? 1;
+        $khachHang->avatar      = $request->avatar ?? 'https://png.pngtree.com/png-vector/20201223/ourlarge/pngtree-cute-cartoon-hand-drawn-cow-animal-avatar-vector-png-image_2591528.jpg';
+        $khachHang->mat_khau    = Hash::make($request->mat_khau);
         $khachHang->save();
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Đăng ký thành công'
         ]);
     }

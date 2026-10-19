@@ -324,28 +324,46 @@ export default {
         };
     },
     mounted() {
-        const kh = localStorage.getItem("khach_hang");
-        if (!kh) {
-            this.$toast.error("Vui lòng đăng nhập trước khi đặt hàng!");
-            this.$router.push("/dang-nhap");
-            return;
-        }
-        this.khach_hang = JSON.parse(kh);
         this.layThongTinLogin();
     },
-    // this.loadDiaChi();
-    // this.layThongTinLogin();
     methods: {
         updateProfile() {
-            axios.post("http://127.0.0.1:8000/api/khach-hang/profile/update", this.khach_hang).then((res) => {
+            var token = localStorage.getItem("khach_hang_login");
+            axios.post("http://127.0.0.1:8000/api/khach-hang/profile/update", this.user, {
+                headers: {
+                    Authorization: "Bearer " + token,
+                },
+            }).then((res) => {
                 if (res.data.status) {
                     this.$toast.success(res.data.message);
+                    if (res.data.data) {
+                        this.user = res.data.data;
+                        localStorage.setItem("khach_hang", JSON.stringify(res.data.data));
+                        localStorage.setItem("ho_ten_khach_hang", res.data.data.ho_ten);
+                        localStorage.setItem("avatar_khach_hang", res.data.data.avatar);
+                    }
+                } else {
+                    this.$toast.error(res.data.message);
                 }
+            }).catch(() => {
+                this.$toast.error("Cập nhật thông tin thất bại");
             });
         },
 
         layThongTinLogin() {
             var token = localStorage.getItem("khach_hang_login");
+            if (!token) {
+                this.$router.push("/khach-hang/dang-nhap");
+                return;
+            }
+
+            const localKh = localStorage.getItem("khach_hang");
+            if (localKh) {
+                try {
+                    this.user = JSON.parse(localKh);
+                } catch (e) {}
+            }
+
             axios
                 .get("http://127.0.0.1:8000/api/khach-hang/profile", {
                     headers: {
@@ -354,12 +372,15 @@ export default {
                 })
                 .then((res) => {
                     if (res.data.status) {
-                        console.log(res.data.data);
                         this.user = res.data.data;
+                        localStorage.setItem("khach_hang", JSON.stringify(res.data.data));
+                        localStorage.setItem("ho_ten_khach_hang", res.data.data.ho_ten);
+                        localStorage.setItem("avatar_khach_hang", res.data.data.avatar);
                     } else {
-                        toaster.error(res.data.message);
+                        this.$toast.error(res.data.message);
                     }
-                });
+                })
+                .catch(() => {});
         },
 
     },

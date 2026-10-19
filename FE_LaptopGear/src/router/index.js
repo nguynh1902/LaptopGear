@@ -66,6 +66,10 @@ const routes = [
     meta: { layout: "blank" },
   },
   {
+    path: "/",
+    redirect: "/trang-chu",
+  },
+  {
     path: "/trang-chu",
     component: () => import("../components/KhachHang/TrangChu/index.vue"),
     meta: { layout: "client" },
@@ -75,14 +79,11 @@ const routes = [
     path: "/khach-hang/chi-tiet-san-pham/:id_san_pham",
     component: () => import("../components/KhachHang/ChiTietSanPham/index.vue"),
     meta: { layout: "client" },
-    beforeEnter: checkLoginKhachHang,
   },
   {
     path: "/khach-hang/san-pham",
     component: () => import("../components/KhachHang/SanPham/index.vue"),
     meta: { layout: "client" },
-    beforeEnter: checkLoginKhachHang,
-
   },
   {
     path: "/khach-hang/thanh-toan",
@@ -98,36 +99,29 @@ const routes = [
     beforeEnter: checkLoginKhachHang,
 
   },
-    {
+  {
     path: "/khach-hang/san-pham-theo-danh-muc",
     component: () => import("../components/KhachHang/SanPhamTheoDanhMuc/index.vue"),
     meta: { layout: "client" },
-    beforeEnter: checkLoginKhachHang,
-
   },
-      {
+  {
     path: "/khach-hang/hoa-don",
     component: () => import("../components/KhachHang/HoaDon/index.vue"),
     meta: { layout: "client" },
     beforeEnter: checkLoginKhachHang,
-
   },
-        {
+  {
     path: "/khach-hang/profile",
     component: () => import("../components/KhachHang/Profile/index.vue"),
     meta: { layout: "client" },
     beforeEnter: checkLoginKhachHang,
-
   },
   {
-  path: '/khach-hang/san-pham-theo-danh-muc/:ma_dm',
-  name: 'SanPhamTheoDanhMuc',
-  component: () => import('../components/KhachHang/SanPhamTheoDanhMuc/index.vue'),
+    path: '/khach-hang/san-pham-theo-danh-muc/:ma_dm',
+    name: 'SanPhamTheoDanhMuc',
+    component: () => import('../components/KhachHang/SanPhamTheoDanhMuc/index.vue'),
     meta: { layout: "client" },
-    beforeEnter: checkLoginKhachHang,
-
-
-},
+  },
 
 ];
 

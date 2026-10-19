@@ -90,11 +90,7 @@ getDanhMuc() {
     }
   });
 },
-
-    formatVND(number) {
-      return new Intl.NumberFormat("vi-VI", { style: "currency", currency: "VND" }).format(number);
-    },
-  },
+},
 };
 </script>
 <style>

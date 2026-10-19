@@ -80,16 +80,29 @@ export default {
                     if (res.data.status) {
                         this.$toast.success(res.data.message);
                         localStorage.setItem('khach_hang_login', res.data.token);
-                        this.$router.push('/khach-hang/profile');
+                        if (res.data.data) {
+                            localStorage.setItem('khach_hang', JSON.stringify(res.data.data));
+                        }
+                        if (res.data.ho_ten || res.data.data?.ho_ten) {
+                            localStorage.setItem('ho_ten_khach_hang', res.data.ho_ten || res.data.data?.ho_ten);
+                        }
+                        if (res.data.avatar || res.data.data?.avatar) {
+                            localStorage.setItem('avatar_khach_hang', res.data.avatar || res.data.data?.avatar);
+                        }
+                        this.$router.push('/trang-chu');
                     } else {
                         this.$toast.error(res.data.message);
                     }
                 })
                 .catch((res) => {
-                    const list = Object.values(res.response.data.errors);
-                    list.forEach((v, i) => {
-                        this.$toast.error(v[0]);
-                    });
+                    if (res.response?.data?.errors) {
+                        const list = Object.values(res.response.data.errors);
+                        list.forEach((v) => {
+                            this.$toast.error(v[0]);
+                        });
+                    } else {
+                        this.$toast.error(res.response?.data?.message || "Đăng nhập thất bại");
+                    }
                 })
         }
     },

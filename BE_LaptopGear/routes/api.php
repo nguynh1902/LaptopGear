@@ -114,6 +114,7 @@ Route::get('/khach-hang/dang-xuat-tat-ca', [KhachHangController::class, 'DangXua
 //==== Profile ======
 Route::post('/khach-hang/profile/update', [KhachHangController::class, 'updateKhachHang']);
 Route::post('/admin/profile/update', [NhanVienController::class, 'updateAdmin']);
+Route::post('/admin/doi-mat-khau', [NhanVienController::class, 'doiMatKhau']);
 
 
 Route::get('/client/Laptop/get-data', [SanPhamController::class, 'getDataClient']);
@@ -125,13 +126,14 @@ Route::get('/client/Laptop/san-pham/{id_san_pham}', [SanPhamController::class, '
 Route::get('/khach-hang/gio-hang/get-data', [GioHangController::class, 'getData']);
 Route::post('/khach-hang/chi-tiet-san-pham/add-data', [GioHangController::class, 'addData']);
 Route::post('/khach-hang/gio-hang/delete', [GioHangController::class, 'delData']);
+Route::post('/khach-hang/gio-hang/delete-nhieu', [GioHangController::class, 'delMultiple']);
 Route::post('/khach-hang/gio-hang/update', [GioHangController::class, 'update']);
 Route::post('/khach-hang/gio-hang/dat-hang', [ThanhToanController::class, 'store']);
 
 
 //==== Thanh Toán ======
 Route::get('/khach-hang/thanh-toan/get-data', [ThanhToanController::class, 'getData']);
-Route::post('/khach-hang/gio-hang/remove', [ThanhToan::class, 'destroy']);
+Route::post('/khach-hang/gio-hang/remove', [ThanhToanController::class, 'destroy']);
 
 
 //==== Hóa Đơn ======

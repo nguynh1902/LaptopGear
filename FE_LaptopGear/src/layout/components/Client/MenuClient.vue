@@ -157,7 +157,7 @@
 
     <!-- Tiktok -->
     <a href="https://www.tiktok.com" target="_blank">
-      <img width="52" height="52" src="/img/7024783_tiktok_social media_icon.png" alt="tiktok">
+      <img width="52" height="52" src="/img/7024783_tiktok_social_media_icon.png" alt="tiktok">
     </a>
 
     <!-- Messenger -->

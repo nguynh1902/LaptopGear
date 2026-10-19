@@ -18,10 +18,10 @@ class CheckoutController
         $vnp_TxnRef = $code_cart; //Mã đơn hàng. Trong thực tế Merchant cần insert đơn hàng vào DB và gửi mã này sang VNPAY
         $vnp_OrderInfo = 'Thanh toán đơn hàng test';
         $vnp_OrderType = 'billpayment';
-        $vnp_Amount = $data['total_vnpay'] * 100;
+        $vnp_Amount = ($data['total_vnpay'] ?? 100000) * 100;
         $vnp_Locale = 'vn';
         // $vnp_BankCode = 'NCB';
-        $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+        $vnp_IpAddr = $request->ip() ?? '127.0.0.1';
 
         $inputData = array(
             "vnp_Version" => "2.1.0",
@@ -71,11 +71,19 @@ class CheckoutController
             'message' => 'success',
             'data' => $vnp_Url
         );
-        if (isset($_POST['redirect'])) {
-            header('Location: ' . $vnp_Url);
-            die();
+        if ($request->has('redirect')) {
+            return redirect($vnp_Url);
         } else {
-            echo json_encode($returnData);
+            return response()->json($returnData);
         }
+    }
+
+    public function momo_payment(Request $request)
+    {
+        return response()->json([
+            'code' => '00',
+            'message' => 'Cổng MoMo đang bảo trì, vui lòng sử dụng phương thức thanh toán khác hoặc VNPAY.',
+            'status' => false
+        ]);
     }
 }
